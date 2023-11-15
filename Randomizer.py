@@ -473,8 +473,9 @@ class Main(QWidget):
                 RandoCore.write_spoiler_log(self.seed)
                 Manager.game.fix_progression_obstacles()
                 Manager.game.update_ability_description()
-                for file in os.listdir("Data\\" + Manager.game_name + "\\TileMap"):
-                    Manager.import_tilemap("Data\\" + Manager.game_name + "\\TileMap\\" + file)
+                if os.path.isdir("Data\\" + Manager.game_name + "\\TileMap"):
+                    for file in os.listdir("Data\\" + Manager.game_name + "\\TileMap"):
+                        Manager.import_tilemap("Data\\" + Manager.game_name + "\\TileMap\\" + file)
             
             random.seed(self.seed)
             RandoCore.randomize_items()
