@@ -36,9 +36,9 @@ def get_map_info():
             is_room_adjacent(room_to_object(room_1), room_to_object(room_2))
 
 def fill_check_to_room():
-    for room in Manager.constant["RoomLogic"]:
-        for door in Manager.constant["RoomLogic"][room]:
-            for check in Manager.constant["RoomLogic"][room][door]:
+    for room in Manager.constant["CasualLogic"]:
+        for door in Manager.constant["CasualLogic"][room]:
+            for check in Manager.constant["CasualLogic"][room][door]:
                 try:
                     check = int(check)
                 except ValueError:

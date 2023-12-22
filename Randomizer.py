@@ -1,5 +1,6 @@
 import Manager
-import RandoCore
+import Gameplay
+import Cosmetic
 import MapHelper
 import MapViewer
 import LunaNights
@@ -23,6 +24,13 @@ import subprocess
 
 script_name, script_extension = os.path.splitext(os.path.basename(__file__))
 
+#variables
+
+game_to_visuals = {
+    "LunaNights": ("#391a18", "#32ff3f33"),
+    "WonderLab":  ("#151e30", "#323377ff")
+}
+
 #Config
 
 config = configparser.ConfigParser()
@@ -41,12 +49,170 @@ def writing():
 class Signaller(QObject):
     progress = Signal(int)
     finished = Signal()
+    error    = Signal(str)
 
-class Update(QThread):
-    def __init__(self, progressBar, api):
+class Generate(QThread):
+    def __init__(self, progress_bar, seed, path):
         QThread.__init__(self)
         self.signaller = Signaller()
-        self.progressBar = progressBar
+        self.progress_bar = progress_bar
+        self.seed = seed
+        self.path = path
+    
+    def run(self):
+        try:
+            self.process()
+        except Gameplay.CompletionError:
+            self.signaller.error.emit("Failed to generate seed.\nItem pool too restricted.")
+        except Exception:
+            self.signaller.error.emit("An error has occured.\nCheck the command window for more detail.")
+            raise
+
+    def process(self):
+        current = 0
+        self.signaller.progress.emit(current)
+        
+        #Backup files
+        if os.path.isfile(self.path + "\\data.bak"):
+            shutil.copyfile(self.path + "\\data.bak", self.path + "\\data.win")
+        else:
+            shutil.copyfile(self.path + "\\data.win", self.path + "\\data.bak")
+        
+        if os.path.isdir(self.path + "\\backup"):
+            shutil.rmtree(self.path + "\\data")
+            shutil.copytree(self.path + "\\backup", self.path + "\\data")
+        else:
+            shutil.copytree(self.path + "\\data", self.path + "\\backup")
+        
+        #Init
+        Gameplay.init()
+        Cosmetic.init()
+        MapHelper.init()
+        Manager.game.init()
+        Manager.load_constant()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Unpacking data...")
+        
+        Manager.unpack_game_data(self.path)
+        Manager.read_game_data()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Applying tweaks...")
+        
+        Manager.game.apply_default_tweaks()
+        Manager.convert_tilemaps_to_patches()
+        
+        if config.getboolean("Gameplay", "bKeyItems"):
+            Manager.game.apply_key_logic_tweaks()
+            Manager.game.apply_progressive_ability_tweaks()
+        
+        if config.getboolean("Cosmetic", "bWorldColors"):
+            Manager.game.apply_world_color_rando_tweaks()
+        
+        if config.getboolean("Cosmetic", "bEnemyColors"):
+            Manager.game.apply_enemy_color_rando_tweaks()
+        
+        if config.getboolean("Cosmetic", "bCharacterColors"):
+            Manager.game.apply_chara_color_rando_tweaks()
+        
+        if Manager.game == LunaNights and random.random() < 1/8:
+            LunaNights.swap_skeleton_sprites()
+        
+        if Manager.game == WonderLab and config.getboolean("Extra", "bSkipBossRush"):
+            WonderLab.skip_boss_rush()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Randomizing items...")
+        
+        Gameplay.categorize_items()
+        Gameplay.set_logic_complexity(config.getint("Gameplay", "iLogicComplexity"))
+        Gameplay.set_enemy_type_wheight(config.getint("Gameplay", "iEnemyTypesWeight"))
+        Gameplay.set_room_logic(config.getboolean("Extra", "bSpeedrunLogic"))
+        
+        if config.getboolean("Gameplay", "bKeyItems"):
+            Gameplay.add_item_type("Key")
+            if Manager.game == LunaNights and not config.getboolean("Gameplay", "bUpgrades") and not config.getboolean("Gameplay", "bSpells") and config.getboolean("Gameplay", "bJewels"):
+                Gameplay.remove_hardcoded_items()
+            MapHelper.get_map_info()
+        
+        if config.getboolean("Gameplay", "bUpgrades"):
+            Gameplay.add_item_type("Upgrade")
+        
+        if config.getboolean("Gameplay", "bSpells"):
+            Gameplay.add_item_type("Spell")
+        
+        if config.getboolean("Gameplay", "bJewels"):
+            Gameplay.add_item_type("Jewel")
+        
+        if config.getboolean("Gameplay", "bWeapons"):
+            Gameplay.add_item_type("Weapon")
+        
+        if config.getboolean("Gameplay", "bKeyItems"):
+            random.seed(self.seed)
+            Gameplay.process_key_logic()
+            Gameplay.write_spoiler_log(self.seed)
+        
+        random.seed(self.seed)
+        Gameplay.randomize_items()
+        
+        if config.getboolean("Gameplay", "bEnemyTypes"):
+            random.seed(self.seed)
+            Gameplay.randomize_enemies()
+        
+        if config.getboolean("Cosmetic", "bBackgroundMusic"):
+            random.seed(self.seed)
+            Cosmetic.randomize_background_music(self.path)
+            Cosmetic.update_music_names()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Randomizing world colors...")
+        
+        if config.getboolean("Cosmetic", "bWorldColors"):
+            random.seed(self.seed)
+            Cosmetic.randomize_texture_colors("WorldTexture")
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Randomizing enemy colors...")
+        
+        if config.getboolean("Cosmetic", "bEnemyColors"):
+            random.seed(self.seed)
+            Cosmetic.randomize_texture_colors("EnemyTexture")
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Randomizing character colors...")
+        
+        if config.getboolean("Cosmetic", "bCharacterColors"):
+            random.seed(self.seed)
+            Cosmetic.randomize_texture_colors("CharacterTexture")
+        
+        if config.getboolean("Cosmetic", "bDialogues"):
+            random.seed(self.seed)
+            Cosmetic.randomize_dialogues()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Repacking data...")
+        
+        Cosmetic.save_game_textures()
+        Manager.write_game_data()
+        Manager.repack_game_data(self.path)
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.signaller.finished.emit()
+
+class Update(QThread):
+    def __init__(self, progress_bar, api):
+        QThread.__init__(self)
+        self.signaller = Signaller()
+        self.progress_bar = progress_bar
         self.api = api
 
     def run(self):
@@ -64,7 +230,7 @@ class Update(QThread):
                 progress += len(data)
                 self.signaller.progress.emit(progress)
         
-        self.progressBar.setLabelText("Extracting...")
+        self.progress_bar.setLabelText("Extracting...")
         
         #Purge folders
         
@@ -127,16 +293,30 @@ class Main(QWidget):
         main_vbox.setSpacing(10)
 
         #Groupboxes
+        
+        random_hbox = QHBoxLayout()
 
         box_1_grid = QGridLayout()
-        self.box_1 = QGroupBox("Randomize")
+        self.box_1 = QGroupBox("Gameplay")
         self.box_1.setLayout(box_1_grid)
-        main_vbox.addWidget(self.box_1)
+        random_hbox.addWidget(self.box_1)
 
         box_2_grid = QGridLayout()
-        self.box_2 = QGroupBox("Game")
+        self.box_2 = QGroupBox("Cosmetic")
         self.box_2.setLayout(box_2_grid)
-        main_vbox.addWidget(self.box_2)
+        random_hbox.addWidget(self.box_2)
+        
+        main_vbox.addLayout(random_hbox)
+
+        box_3_grid = QGridLayout()
+        self.box_3 = QGroupBox()
+        self.box_3.setLayout(box_3_grid)
+        main_vbox.addWidget(self.box_3)
+
+        box_4_grid = QGridLayout()
+        self.box_4 = QGroupBox()
+        self.box_4.setLayout(box_4_grid)
+        main_vbox.addWidget(self.box_4)
         
         #Checkboxes
 
@@ -169,6 +349,44 @@ class Main(QWidget):
         self.check_box_6.setToolTip("Shuffle enemies by type.")
         self.check_box_6.stateChanged.connect(self.check_box_6_changed)
         box_1_grid.addWidget(self.check_box_6, 4, 0)
+
+        self.check_box_7 = QCheckBox("Background Music")
+        self.check_box_7.setToolTip("Shuffle music tracks by type.")
+        self.check_box_7.stateChanged.connect(self.check_box_7_changed)
+        box_2_grid.addWidget(self.check_box_7, 0, 0)
+
+        self.check_box_8 = QCheckBox("World Colors")
+        self.check_box_8.setToolTip("Randomize the hue of tilesets and backgrounds.")
+        self.check_box_8.stateChanged.connect(self.check_box_8_changed)
+        box_2_grid.addWidget(self.check_box_8, 1, 0)
+
+        self.check_box_9 = QCheckBox("Enemy Colors")
+        self.check_box_9.setToolTip("Randomize the hue of enemy sprites.")
+        self.check_box_9.stateChanged.connect(self.check_box_9_changed)
+        box_2_grid.addWidget(self.check_box_9, 2, 0)
+
+        self.check_box_10 = QCheckBox("Character Colors")
+        self.check_box_10.setToolTip("Randomize the hue of character sprites.")
+        self.check_box_10.stateChanged.connect(self.check_box_10_changed)
+        box_2_grid.addWidget(self.check_box_10, 3, 0)
+        
+        self.check_box_11 = QCheckBox("Dialogues")
+        self.check_box_11.setToolTip("Randomize all conversation lines.")
+        self.check_box_11.stateChanged.connect(self.check_box_11_changed)
+        box_2_grid.addWidget(self.check_box_11, 4, 0)
+
+        self.check_box_12 = QCheckBox("Speedrun Logic")
+        self.check_box_12.setToolTip("Switch to a progression logic that may require\nspeedrun tricks, glitches and taking damage.")
+        self.check_box_12.stateChanged.connect(self.check_box_12_changed)
+        box_3_grid.addWidget(self.check_box_12, 0, 0)
+        
+        self.check_box_13 = QCheckBox("Skip Boss Rush")
+        self.check_box_13.setToolTip("Allow going around the boss rush at the end of stage 6.")
+        self.check_box_13.stateChanged.connect(self.check_box_13_changed)
+        box_3_grid.addWidget(self.check_box_13, 1, 0)
+        retain = self.check_box_13.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_13.setSizePolicy(retain)
         
         #SpinButtons
         
@@ -192,11 +410,11 @@ class Main(QWidget):
         
         self.radio_button_1 = QRadioButton("Luna Nights")
         self.radio_button_1.toggled.connect(self.radio_button_group_1_checked)
-        box_2_grid.addWidget(self.radio_button_1, 0, 0)
+        box_4_grid.addWidget(self.radio_button_1, 0, 0)
         
         self.radio_button_2 = QRadioButton("Wonder Labyrinth")
         self.radio_button_2.toggled.connect(self.radio_button_group_1_checked)
-        box_2_grid.addWidget(self.radio_button_2, 1, 0)
+        box_4_grid.addWidget(self.radio_button_2, 1, 0)
         
         #Seed
         
@@ -218,15 +436,24 @@ class Main(QWidget):
         
         #Init checkboxes
         
-        self.check_box_1.setChecked(config.getboolean("Randomize", "bKeyItems"))
-        self.check_box_2.setChecked(config.getboolean("Randomize", "bUpgrades"))
-        self.check_box_3.setChecked(config.getboolean("Randomize", "bSpells"))
-        self.check_box_4.setChecked(config.getboolean("Randomize", "bJewels"))
-        self.check_box_5.setChecked(config.getboolean("Randomize", "bWeapons"))
-        self.check_box_6.setChecked(config.getboolean("Randomize", "bEnemyTypes"))
+        self.check_box_1.setChecked(config.getboolean("Gameplay", "bKeyItems"))
+        self.check_box_2.setChecked(config.getboolean("Gameplay", "bUpgrades"))
+        self.check_box_3.setChecked(config.getboolean("Gameplay", "bSpells"))
+        self.check_box_4.setChecked(config.getboolean("Gameplay", "bJewels"))
+        self.check_box_5.setChecked(config.getboolean("Gameplay", "bWeapons"))
+        self.check_box_6.setChecked(config.getboolean("Gameplay", "bEnemyTypes"))
         
-        self.spin_button_1_set_index(config.getint("Randomize", "iLogicComplexity"))
-        self.spin_button_2_set_index(config.getint("Randomize", "iEnemyTypesWeight"))
+        self.check_box_7.setChecked(config.getboolean("Cosmetic", "bBackgroundMusic"))
+        self.check_box_8.setChecked(config.getboolean("Cosmetic", "bWorldColors"))
+        self.check_box_9.setChecked(config.getboolean("Cosmetic", "bEnemyColors"))
+        self.check_box_10.setChecked(config.getboolean("Cosmetic", "bCharacterColors"))
+        self.check_box_11.setChecked(config.getboolean("Cosmetic", "bDialogues"))
+        
+        self.check_box_12.setChecked(config.getboolean("Extra", "bSpeedrunLogic"))
+        self.check_box_13.setChecked(config.getboolean("Extra", "bSkipBossRush"))
+        
+        self.spin_button_1_set_index(config.getint("Gameplay", "iLogicComplexity"))
+        self.spin_button_2_set_index(config.getint("Gameplay", "iEnemyTypesWeight"))
         
         #Text field
         
@@ -288,29 +515,59 @@ class Main(QWidget):
 
     def check_box_1_changed(self):
         checked = self.check_box_1.isChecked()
-        config.set("Randomize", "bKeyItems", str(checked).lower())
+        config.set("Gameplay", "bKeyItems", str(checked).lower())
         self.spin_button_1.setVisible(checked)
+        self.reset_visuals()
 
     def check_box_2_changed(self):
         checked = self.check_box_2.isChecked()
-        config.set("Randomize", "bUpgrades", str(checked).lower())
+        config.set("Gameplay", "bUpgrades", str(checked).lower())
 
     def check_box_3_changed(self):
         checked = self.check_box_3.isChecked()
-        config.set("Randomize", "bSpells", str(checked).lower())
+        config.set("Gameplay", "bSpells", str(checked).lower())
 
     def check_box_4_changed(self):
         checked = self.check_box_4.isChecked()
-        config.set("Randomize", "bJewels", str(checked).lower())
+        config.set("Gameplay", "bJewels", str(checked).lower())
 
     def check_box_5_changed(self):
         checked = self.check_box_5.isChecked()
-        config.set("Randomize", "bWeapons", str(checked).lower())
+        config.set("Gameplay", "bWeapons", str(checked).lower())
 
     def check_box_6_changed(self):
         checked = self.check_box_6.isChecked()
-        config.set("Randomize", "bEnemyTypes", str(checked).lower())
+        config.set("Gameplay", "bEnemyTypes", str(checked).lower())
         self.spin_button_2.setVisible(checked)
+        self.reset_visuals()
+
+    def check_box_7_changed(self):
+        checked = self.check_box_7.isChecked()
+        config.set("Cosmetic", "bBackgroundMusic", str(checked).lower())
+
+    def check_box_8_changed(self):
+        checked = self.check_box_8.isChecked()
+        config.set("Cosmetic", "bWorldColors", str(checked).lower())
+
+    def check_box_9_changed(self):
+        checked = self.check_box_9.isChecked()
+        config.set("Cosmetic", "bEnemyColors", str(checked).lower())
+
+    def check_box_10_changed(self):
+        checked = self.check_box_10.isChecked()
+        config.set("Cosmetic", "bCharacterColors", str(checked).lower())
+
+    def check_box_11_changed(self):
+        checked = self.check_box_11.isChecked()
+        config.set("Cosmetic", "bDialogues", str(checked).lower())
+
+    def check_box_12_changed(self):
+        checked = self.check_box_12.isChecked()
+        config.set("Extra", "bSpeedrunLogic", str(checked).lower())
+
+    def check_box_13_changed(self):
+        checked = self.check_box_13.isChecked()
+        config.set("Extra", "bSkipBossRush", str(checked).lower())
 
     def spin_button_1_clicked(self):
         index = int(self.spin_button_1.text())
@@ -319,7 +576,7 @@ class Main(QWidget):
     
     def spin_button_1_set_index(self, index):
         self.spin_button_1.setText(str(index))
-        config.set("Randomize", "iLogicComplexity", str(index))
+        config.set("Gameplay", "iLogicComplexity", str(index))
 
     def spin_button_2_clicked(self):
         index = int(self.spin_button_2.text())
@@ -328,31 +585,38 @@ class Main(QWidget):
     
     def spin_button_2_set_index(self, index):
         self.spin_button_2.setText(str(index))
-        config.set("Randomize", "iEnemyTypesWeight", str(index))
+        config.set("Gameplay", "iEnemyTypesWeight", str(index))
     
     def radio_button_group_1_checked(self):
         config.set("Game", "bLunaNights", str(self.radio_button_1.isChecked()).lower())
         config.set("Game", "bWonderLab", str(self.radio_button_2.isChecked()).lower())
         self.check_box_4.setVisible(self.radio_button_1.isChecked())
         self.check_box_5.setVisible(self.radio_button_2.isChecked())
+        self.check_box_13.setVisible(self.radio_button_2.isChecked())
         if self.radio_button_1.isChecked():
             self.output_field.setText(config.get("Misc", "sLunaNightsGameDir"))
-            self.reset_visuals("LunaNights", "#391a18", "#32ff3f33")
         if self.radio_button_2.isChecked():
             self.output_field.setText(config.get("Misc", "sWonderLabGameDir"))
-            self.reset_visuals("WonderLab", "#151e30", "#323377ff")
+        self.reset_visuals()
     
-    def reset_visuals(self, game, main_color, sub_color):
+    def reset_visuals(self):
+        #Determine game
+        if config.getboolean("Game", "bLunaNights"):
+            game = "LunaNights"
+        if config.getboolean("Game", "bWonderLab"):
+            game = "WonderLab"
+        main_color = game_to_visuals[game][0]
+        sub_color  = game_to_visuals[game][1]
+        #Update colors
         self.setStyleSheet("QWidget{background:transparent; color: #ffffff; font-family: Cambria; font-size: 18px}"
-        + "QLabel{border: 1px}"
         + "QMessageBox{background-color: " + main_color + "}"
         + "QDialog{background-color: " + main_color + "}"
         + "QProgressDialog{background-color: " + main_color + "}"
         + "QPushButton{background-color: " + main_color + "}"
-        + "QDoubleSpinBox{background-color: " + main_color + "; selection-background-color: " + sub_color + "}"
         + "QLineEdit{background-color: " + main_color + "; selection-background-color: " + sub_color + "}"
         + "QProgressBar{border: 2px solid white; text-align: center; font: bold}"
         + "QToolTip{border: 0px; background-color: " + main_color + "; color: #ffffff; font-family: Cambria; font-size: 18px}")
+        #Update background
         background = QPixmap("Data\\" + game + "\\background.png")
         palette = QPalette()
         palette.setBrush(QPalette.Window, background)
@@ -371,10 +635,29 @@ class Main(QWidget):
             config.set("Misc", "sSeed", text)
     
     def set_progress(self, progress):
-        self.progressBar.setValue(progress)
+        self.progress_bar.setValue(progress)
+    
+    def rando_finished(self):
+        self.setEnabled(True)
+        box = QMessageBox(self)
+        box.setWindowTitle("Message")
+        box.setText("Game randomized !")
+        box.exec()
     
     def update_finished(self):
         sys.exit()
+    
+    def thread_failure(self, reason):
+        self.progress_bar.close()
+        self.setEnabled(True)
+        self.notify_error(reason)
+    
+    def notify_error(self, message):
+        box = QMessageBox(self)
+        box.setWindowTitle("Error")
+        box.setIcon(QMessageBox.Critical)
+        box.setText(message)
+        box.exec()
 
     def button_1_clicked(self):
         
@@ -403,109 +686,16 @@ class Main(QWidget):
         self.setEnabled(False)
         QApplication.processEvents()
         
-        #Step 1
-        try:
-            #Backup files
-            if os.path.isfile(game_path + "\\data.bak"):
-                shutil.copyfile(game_path + "\\data.bak", game_path + "\\data.win")
-            else:
-                shutil.copyfile(game_path + "\\data.win", game_path + "\\data.bak")
-            
-            if os.path.isfile(game_path + "\\data\\dial_e.bak"):
-                shutil.copyfile(game_path + "\\data\\dial_e.bak", game_path + "\\data\\dial_e.txt")
-            else:
-                shutil.copyfile(game_path + "\\data\\dial_e.txt", game_path + "\\data\\dial_e.bak")
-            
-            #Appy patches
-            if config.getboolean("Randomize", "bKeyItems"):
-                Manager.apply_xdelta_patch(game_path + "\\data.win", Manager.game_name + "\\ability.xdelta")
-            
-            #Init
-            Manager.game.init()
-            Manager.load_constant()
-            
-        except Exception:
-            self.abort_process("An error has occured.\nCheck the command window for more detail.")
-            raise
+        self.progress_bar = QProgressDialog("Initializing...", None, 0, 8, self)
+        self.progress_bar.setFixedSize(280, 80)
+        self.progress_bar.setWindowTitle("Status")
+        self.progress_bar.setWindowModality(Qt.WindowModal)
         
-        #Step 2
-        try:
-            #Open game
-            Manager.open_game_data(game_path)
-            Manager.read_game_data()
-            
-            #Apply changes
-            Manager.game.apply_default_tweaks()
-            
-            RandoCore.init()
-            RandoCore.categorize_items()
-            RandoCore.set_logic_complexity(config.getint("Randomize", "iLogicComplexity"))
-            RandoCore.set_enemy_type_wheight(config.getint("Randomize", "iEnemyTypesWeight"))
-            
-            MapHelper.init()
-            
-            if config.getboolean("Randomize", "bKeyItems"):
-                RandoCore.add_item_type("Key")
-                if not config.getboolean("Randomize", "bUpgrades") and not config.getboolean("Randomize", "bSpells") and config.getboolean("Randomize", "bJewels"):
-                    RandoCore.remove_ice_magatama()
-            
-            if config.getboolean("Randomize", "bUpgrades"):
-                RandoCore.add_item_type("Upgrade")
-            
-            if config.getboolean("Randomize", "bSpells"):
-                RandoCore.add_item_type("Spell")
-            
-            if config.getboolean("Randomize", "bJewels"):
-                RandoCore.add_item_type("Jewel")
-            
-            if config.getboolean("Randomize", "bWeapons"):
-                RandoCore.add_item_type("Weapon")
-            
-            if config.getboolean("Randomize", "bKeyItems"):
-                random.seed(self.seed)
-                MapHelper.get_map_info()
-                try:
-                    RandoCore.process_key_logic()
-                except RuntimeError:
-                    Manager.close_game_data(game_path)
-                    self.abort_process("Failed to generate seed.\nItem pool too restricted.")
-                    return
-                RandoCore.write_spoiler_log(self.seed)
-                Manager.game.fix_progression_obstacles()
-                Manager.game.update_ability_description()
-                if os.path.isdir("Data\\" + Manager.game_name + "\\TileMap"):
-                    for file in os.listdir("Data\\" + Manager.game_name + "\\TileMap"):
-                        Manager.import_tilemap("Data\\" + Manager.game_name + "\\TileMap\\" + file)
-            
-            random.seed(self.seed)
-            RandoCore.randomize_items()
-            
-            if config.getboolean("Randomize", "bEnemyTypes"):
-                random.seed(self.seed)
-                RandoCore.randomize_enemies()
-            
-            #Close game
-            Manager.write_game_data()
-            Manager.close_game_data(game_path)
-            
-        except Exception:
-            Manager.close_game_data(game_path)
-            self.abort_process("An error has occured.\nCheck the command window for more detail.")
-            raise
-        
-        self.setEnabled(True)
-        box = QMessageBox(self)
-        box.setWindowTitle("Message")
-        box.setText("Game randomized !")
-        box.exec()
-    
-    def abort_process(self, message):
-        self.setEnabled(True)
-        box = QMessageBox(self)
-        box.setWindowTitle("Error")
-        box.setIcon(QMessageBox.Critical)
-        box.setText(message)
-        box.exec()
+        self.worker = Generate(self.progress_bar, self.seed, game_path)
+        self.worker.signaller.progress.connect(self.set_progress)
+        self.worker.signaller.finished.connect(self.rando_finished)
+        self.worker.signaller.error.connect(self.thread_failure)
+        self.worker.start()
     
     def button_2_clicked(self):
         
@@ -526,21 +716,18 @@ class Main(QWidget):
         QApplication.processEvents()
         
         #Restore files
-        try:
-            if os.path.isfile(game_path + "\\data.bak"):
-                os.remove(game_path + "\\data.win")
-                os.rename(game_path + "\\data.bak", game_path + "\\data.win")
-            if os.path.isfile(game_path + "\\data\\dial_e.bak"):
-                os.remove(game_path + "\\data\\dial_e.txt")
-                os.rename(game_path + "\\data\\dial_e.bak", game_path + "\\data\\dial_e.txt")
-        except Exception:
-            self.abort_process()
+        if os.path.isfile(game_path + "\\data.bak"):
+            os.remove(game_path + "\\data.win")
+            os.rename(game_path + "\\data.bak", game_path + "\\data.win")
+        if os.path.isdir(game_path + "\\backup"):
+            shutil.rmtree(game_path + "\\data")
+            os.rename(game_path + "\\backup", game_path + "\\data")
         
+        self.setEnabled(True)
         box = QMessageBox(self)
         box.setWindowTitle("Message")
         box.setText("Game directory reverted back to vanilla !")
         box.exec()
-        self.setEnabled(True)
     
     def button_3_clicked(self):
         file = QFileDialog.getOpenFileName(parent=self, caption="File", filter="*.json")[0].replace("/", "\\")
@@ -619,13 +806,13 @@ class Main(QWidget):
         if tag != config.get("Misc", "sVersion"):
             choice = QMessageBox.question(self, "Auto Updater", "New version found:\n\n" + api["body"] + "\n\nUpdate ?", QMessageBox.Yes | QMessageBox.No)
             if choice == QMessageBox.Yes:
-                self.progressBar = QProgressDialog("Downloading...", None, 0, api["assets"][0]["size"], self)
-                self.progressBar.setWindowTitle("Status")
-                self.progressBar.setWindowModality(Qt.WindowModal)
-                self.progressBar.setAutoClose(False)
-                self.progressBar.setAutoReset(False)
+                self.progress_bar = QProgressDialog("Downloading...", None, 0, api["assets"][0]["size"], self)
+                self.progress_bar.setWindowTitle("Status")
+                self.progress_bar.setWindowModality(Qt.WindowModal)
+                self.progress_bar.setAutoClose(False)
+                self.progress_bar.setAutoReset(False)
                 
-                self.worker = Update(self.progressBar, api)
+                self.worker = Update(self.progress_bar, api)
                 self.worker.signaller.progress.connect(self.set_progress)
                 self.worker.signaller.finished.connect(self.update_finished)
                 self.worker.start()

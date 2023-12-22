@@ -1,10 +1,7 @@
 import Manager
+import Cosmetic
 
 def init():
-    global object_list_pointer
-    object_list_pointer = 0x581DA8
-    global room_list_pointer
-    room_list_pointer = 0x5C65C8
     global instance_to_offset_up
     instance_to_offset_up = {
         100050:  24,
@@ -81,6 +78,8 @@ def init():
         100511: (2736, 3856),
         100870: (9504, 2016)
     }
+    global hardcoded_instance_to_item
+    hardcoded_instance_to_item = {}
     global grounded_item_to_offset_up
     grounded_item_to_offset_up = {
         "rock_switch_ob": 0,
@@ -96,16 +95,17 @@ def init():
         "NSitem_0_84",
         "NSitem_0_85"
     ]
-    global keyless_checks
-    keyless_checks = [
-        100051
-    ]
-    global special_check
-    special_check = "Stage_02_21_0_0_Left"
-    global special_check_requirement
-    special_check_requirement = "Stage_02_47_0_1_Right"
-    global macro_requirements
-    macro_requirements = ["NSitem_0_83", "NSitem_0_85"]
+    global special_check_to_requirement
+    special_check_to_requirement = {
+        "Stage_00_18_0_0_Bottom": "Stage_02_47_0_1_Right",
+        "Stage_02_21_0_0_Left":   "Stage_02_47_0_1_Right"
+    }
+    global macro_to_requirements
+    macro_to_requirements = {
+        "Height": ["NSitem_0_83", "NSitem_0_85"],
+        "FSlide": [["NSitem_0_81", "NSitem_0_82"]],
+        "SoulsK": [["NSitem_0_91.288", "NSitem_0_91.289", "NSitem_0_91.290", "NSitem_0_91.291", "NSitem_0_91.292"]]
+    }
     global map_colors
     map_colors = [
         "#71a839",
@@ -115,54 +115,40 @@ def init():
         "#7139a8",
         "#1a805d"
     ]
+    global tileset_to_tile_blacklist
+    tileset_to_tile_blacklist = {}
+    global dialogue_skip
+    dialogue_skip = [
+        "#s0a",
+        "#s0b",
+        "#s94",
+        "#s99"
+    ]
 
 def apply_default_tweaks():
     pass
 
-def fix_progression_obstacles():
+def apply_key_logic_tweaks():
     #Remove the early fire barrels
     Manager.remove_entity(100102)
     Manager.remove_entity(100103)
     #Remove boss doors to prevent softlocks
     Manager.game_objects["boss_brock_ob"].sprite = -1
-    #Add a platform to the stage 5 high jump check
-    Manager.game_data.seek(0xB51EDC)
-    Manager.game_data.write((0x12).to_bytes(4, "little"))
+    #Replace the stage 1 50x jumps platform by a soul key gate
+    Manager.game_entities[100124].y_pos += 16
+    Manager.game_entities[100124].type = "stage02_fifthkey_move_platform"
     
-    Manager.game_data.seek(0xB94F8C)
-    Manager.game_data.write((0x4F).to_bytes(4, "little"))
-    Manager.game_data.seek(0xB9566C)
-    Manager.game_data.write((0x63).to_bytes(4, "little"))
-    Manager.game_data.seek(0xB95D4C)
-    Manager.game_data.write((0x1C).to_bytes(4, "little"))
-    #Add a platform to the stage 6 bow check
-    Manager.game_data.seek(0xC5D870)
-    Manager.game_data.write((0x07).to_bytes(4, "little"))
-    Manager.game_data.seek(0xC5D874)
-    Manager.game_data.write((0x06).to_bytes(4, "little"))
-    Manager.game_data.seek(0xC5DF50)
-    Manager.game_data.write((0x14).to_bytes(4, "little"))
-    Manager.game_data.seek(0xC5DF54)
-    Manager.game_data.write((0x13).to_bytes(4, "little"))
+    Manager.game_entities[100050].x_pos = 7520
+    Manager.game_entities[100050].y_pos = 2336
+    instance_to_offset_up[100050] += 40
     
-    Manager.game_data.seek(0xCA16E0)
-    Manager.game_data.write((0x15).to_bytes(4, "little"))
-    Manager.game_data.seek(0xCA16E4)
-    Manager.game_data.write((0x1A).to_bytes(4, "little"))
-    Manager.game_data.seek(0xCA1DC0)
-    Manager.game_data.write((0x20000015).to_bytes(4, "little"))
-    Manager.game_data.seek(0xCA1DC4)
-    Manager.game_data.write((0x2000001A).to_bytes(4, "little"))
+    Manager.apply_tilemap_patch("Stage1SoulGate")
     
-    Manager.game_data.seek(0xD6D38C)
-    Manager.game_data.write((0x15).to_bytes(4, "little"))
-    Manager.game_data.seek(0xD6D390)
-    Manager.game_data.write((0x1A).to_bytes(4, "little"))
-    Manager.game_data.seek(0xD6DA6C)
-    Manager.game_data.write((0x20000015).to_bytes(4, "little"))
-    Manager.game_data.seek(0xD6DA70)
-    Manager.game_data.write((0x2000001A).to_bytes(4, "little"))
-    #Make a few changes for the stage 4 cutscene crash workaround
+    Cosmetic.import_texture(7932)
+    Cosmetic.import_texture(7933)
+    #Edit stage 4 to work around the parn kill cutscene crash
+    Manager.apply_tilemap_patch("ParnKillCrashFix")
+    
     Manager.game_entities[100860].x_pos = 10528
     instance_to_offset_up[100860] += 64
     
@@ -180,12 +166,128 @@ def fix_progression_obstacles():
     Manager.game_entities[100791].y_pos = 3744
     Manager.game_entities[100791].type = "gimmick_shutter"
     Manager.game_entities[100791].creation_code = 136
+    #Add a platform to the stage 5 high jump check
+    Manager.apply_tilemap_patch("HighJumpAntiSoftlock")
+    #Add a platform to the stage 6 bow check
+    Manager.apply_tilemap_patch("ApollonAntiSoftlock")
+    #Block off the stage 6 teal gate shortcut
+    Manager.apply_tilemap_patch("TealShortcutRemoval")
 
-def update_ability_description():
+def apply_progressive_ability_tweaks():
+    #Update textures
+    page_item = Manager.get_page_item_by_index(3655)
+    page_item.source_pos_x  = 14
+    page_item.source_pos_y  = 767
+    page_item.source_size_x = 32
+    page_item.source_size_y = 32
+    page_item.target_pos_x  = 0
+    page_item.target_pos_y  = 0
+    page_item.target_size_x = 32
+    page_item.target_size_y = 32
+    Cosmetic.import_texture(3655)
+    
+    page_item = Manager.get_page_item_by_index(3513)
+    page_item.source_pos_x  = 14
+    page_item.source_pos_y  = 803
+    page_item.source_size_x = 240
+    page_item.source_size_y = 50
+    page_item.target_pos_x  = 0
+    page_item.target_pos_y  = 0
+    page_item.target_size_x = 240
+    page_item.target_size_y = 50
+    Cosmetic.import_texture(3513)
+    
+    page_item = Manager.get_page_item_by_index(3551)
+    page_item.source_pos_x  = 50
+    page_item.source_pos_y  = 767
+    page_item.source_size_x = 32
+    page_item.source_size_y = 32
+    page_item.target_pos_x  = 0
+    page_item.target_pos_y  = 0
+    page_item.target_size_x = 32
+    page_item.target_size_y = 32
+    Cosmetic.import_texture(3551)
+    
+    page_item = Manager.get_page_item_by_index(3507)
+    page_item.source_pos_x  = 258
+    page_item.source_pos_y  = 777
+    page_item.source_size_x = 240
+    page_item.source_size_y = 50
+    page_item.target_pos_x  = 0
+    page_item.target_pos_y  = 0
+    page_item.target_size_x = 240
+    page_item.target_size_y = 50
+    Cosmetic.import_texture(3507)
+    #Update texture pointers
+    Manager.game_objects["NSitem_0_81"].sprite = "item_sliding"
+    Manager.game_objects["NSitem_0_83"].sprite = "item_sliding"
+    Manager.game_objects["NSitem_0_84"].sprite = "item_sliding"
+    
+    Manager.game_sprites["item_vision"].page_items[15] = 3513
+    Manager.game_sprites["item_vision"].page_items[17] = 3513
+    Manager.game_sprites["item_vision"].page_items[18] = 3513
+    #Update descriptions
     skill_up_text = "Ability Upgrade\nYou can now use a new ability."
     final_up_text = "Final Ability\nYou can now use every ability."
-    Manager.replace_text_entry("@80", skill_up_text)
-    Manager.replace_text_entry("@81", skill_up_text)
-    Manager.replace_text_entry("@82", skill_up_text)
-    Manager.replace_text_entry("@83", skill_up_text)
-    Manager.replace_text_entry("@84", final_up_text)
+    Cosmetic.set_text_entry("@80", skill_up_text)
+    Cosmetic.set_text_entry("@81", skill_up_text)
+    Cosmetic.set_text_entry("@82", skill_up_text)
+    Cosmetic.set_text_entry("@83", skill_up_text)
+    Cosmetic.set_text_entry("@84", final_up_text)
+
+def apply_world_color_rando_tweaks():
+    #Expand background textures to cover the whole view
+    page_item = Manager.get_page_item_by_index(7011)
+    page_item.source_pos_y  += 364
+    page_item.source_size_x += 160
+    page_item.target_size_x += 160
+    page_item.bound_size_x  += 160
+    page_item.target_pos_x  -= 80
+    Cosmetic.import_texture(7011)
+    
+    page_item = Manager.get_page_item_by_index(7920)
+    page_item.source_pos_x   = 962
+    page_item.source_pos_y   = 1094
+    page_item.source_size_x += 160
+    page_item.target_size_x += 160
+    page_item.bound_size_x  += 160
+    page_item.target_pos_x  -= 80
+    page_item.texture_id     = 49
+    Cosmetic.import_texture(7920)
+    
+    page_item = Manager.get_page_item_by_index(8834)
+    page_item.source_pos_x   = 266
+    page_item.source_pos_y   = 1352
+    page_item.source_size_x += 160
+    page_item.source_size_y += 60
+    page_item.target_size_x += 160
+    page_item.target_size_y += 60
+    page_item.bound_size_x  += 160
+    page_item.bound_size_y  += 60
+    page_item.target_pos_x  -= 80
+    page_item.target_pos_y  -= 60
+    Cosmetic.import_texture(8834)
+    
+    page_item = Manager.get_page_item_by_index(9478)
+    page_item.source_pos_x   = 234
+    page_item.source_pos_y   = 2962
+    page_item.source_size_x += 203
+    page_item.target_size_x += 203
+    page_item.bound_size_x  += 203
+    page_item.target_pos_x  -= 203
+    Cosmetic.import_texture(9478)
+    #Override background effects with hardcoded colors
+    Cosmetic.import_texture(8836)
+    Cosmetic.import_texture(8838)
+    Cosmetic.import_texture(9527)
+    Cosmetic.import_texture(9528)
+
+def apply_enemy_color_rando_tweaks():
+    pass
+
+def apply_chara_color_rando_tweaks():
+    #Neutralize the soul crusher effect color
+    Cosmetic.import_texture(1062)
+
+def skip_boss_rush():
+    Manager.apply_tilemap_patch("SkipBossRush")

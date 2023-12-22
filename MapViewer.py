@@ -74,14 +74,17 @@ class RoomItem(QGraphicsRectItem):
     
     def reset_visuals(self):
         current_fill = theme_to_visuals[self.current_theme]["Fill"][self.room_data.stage_id]
+        current_outline = theme_to_visuals[self.current_theme]["Outline"]
         self.setBrush(current_fill)
-        self.outline.setColor(theme_to_visuals[self.current_theme]["Outline"])
+        self.outline.setColor(current_outline)
         self.setPen(self.outline)
         for item in self.childItems():
             if type(item) == QGraphicsRectItem:
                 item.setBrush(current_fill)
             if type(item) == QGraphicsPixmapItem:
                 item.setPixmap(theme_to_visuals[self.current_theme]["Icon"][self.room_data.icon])
+            if type(item) == QGraphicsTextItem:
+                item.setDefaultTextColor(current_outline)
 
 class MainWindow(QMainWindow):
     def __init__(self, seed, spoiler):
@@ -229,3 +232,10 @@ class MainWindow(QMainWindow):
                 new_door = self.scene.addRect(0, 0, 4, OUTLINE, outline)
                 new_door.setPos(door.x_block*TILEWIDTH + 5.5, door.y_block*TILEHEIGHT + TILEHEIGHT - 1)
                 new_door.setParentItem(room)
+        
+        #Text
+        text = self.scene.addText(room.room_data.name.split("_")[-1], "Impact")
+        text.setVisible(False)
+        text.setTransform(QTransform.fromScale(0.5, -0.5))
+        text.setPos(room.room_data.width*TILEWIDTH/2 - text.document().size().width()/4.25, room.room_data.height*TILEHEIGHT/2 + TILEHEIGHT*2/3)
+        text.setParentItem(room)
