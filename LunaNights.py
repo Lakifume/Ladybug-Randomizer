@@ -1,7 +1,10 @@
 import Manager
+import Gameplay
 import Cosmetic
 
 def init():
+    global save_directory
+    save_directory = "touhou_luna_nights"
     global instance_to_offset_up
     instance_to_offset_up = {
         100191:   64,
@@ -80,15 +83,6 @@ def init():
         "Height": ["NSitem_0_81", "Flight"],
         "Flight": [["NSitem_0_70.-1", "NSitem_0_82"]]
     }
-    global map_colors
-    map_colors = [
-        "#71a839",
-        "#a83939",
-        "#a88d39",
-        "#3971a8",
-        "#7139a8",
-        "#a83971"
-    ]
     global tileset_to_tile_blacklist
     tileset_to_tile_blacklist = {
         "stage01_map":  [275, 276, 609, 610, 626, 627, 645, 646, 647, 648, 665, 666, 667, 668],
@@ -103,9 +97,41 @@ def init():
         "#s73",
         "#s74"
     ]
+    global map_colors
+    map_colors = [
+        "#71a839",
+        "#a83939",
+        "#a88d39",
+        "#3971a8",
+        "#7139a8",
+        "#a83971"
+    ]
+    global tracker_to_save_watch
+    tracker_to_save_watch = {
+        "NSitem_0_70.-1": "iTimeBonus",
+        "NSitem_0_80":    "iAbilityIndex",
+        "NSitem_0_81":    "iAbilityIndex",
+        "NSitem_0_82":    "iAbilityIndex",
+        "NSitem_0_83":    "iAbilityIndex",
+        "NSitem_0_84":    "iSpecialMode",
+        "NSitem_0_90":    "lHasRedKey",
+        "NSitem_0_91":    "lHasYellowKey",
+        "NSitem_0_92":    "lHasGreenKey",
+        "NSitem_0_93":    "lHasBlueKey",
+        "NSitem_0_94":    "lHasPurpleKey",
+        "NSitem_0_95":    "lHasIceMagatama",
+        "NSenemy_0_08":   "bMeilingDefeatedFlag",
+        "NSenemy_0_12":   "bMarisaDefeatedFlag",
+        "NSenemy_0_28":   "bPatchouliDefeatedFlag",
+        "NSenemy_0_46":   "bRemiliaDefeatedFlag",
+        "NSenemy_0_75":   "bFileClearFlag",
+        "NSenemy_0_3a":   "bCirnoDefeatedFlag",
+        "NSenemy_0_0a":   "bFileAllClearFlag"
+    }
 
 def apply_default_tweaks():
-    pass
+    #Fix the purple key typo
+    Cosmetic.set_text_entry("@93", "You got PURPLE KEY\nYou can now open doors with a purple aura.")
 
 def apply_key_logic_tweaks():
     #Work around the invisible bathtub wall in stage 1
@@ -119,17 +145,10 @@ def apply_key_logic_tweaks():
     Manager.game_entities[100126].creation_code = -1
     #Add a platform to the stage 2 blue door
     Manager.apply_tilemap_patch("BlueDoorShortcut")
-    #Create a work around for the Nitori cutscene softlock
-    Manager.apply_tilemap_patch("LibraryNitoriFix")
-    
-    Manager.game_entities[100513].x_pos = 4128
-    Manager.game_entities[100513].y_pos = 1312
-    Manager.game_entities[100513].type = "collision_viewout"
-    Manager.game_entities[100512].x_pos = 4160
-    Manager.game_entities[100512].y_pos = 1312
-    Manager.game_entities[100512].type = "collision_viewout"
+    #Disable the library Nitori cutscene
+    Manager.game_save["bGemPowerTutorialFlag"] = True
     #Add a block to the stage 5 purple key check
-    Manager.apply_tilemap_patch("PurpleKeyAntiSoftlock")
+    Manager.apply_tilemap_patch("PurpleKeyReturn")
 
 def apply_progressive_ability_tweaks():
     #Update textures
@@ -159,6 +178,10 @@ def apply_progressive_ability_tweaks():
     Manager.game_objects["NSitem_0_82"].sprite = "item_sliding"
     Manager.game_objects["NSitem_0_83"].sprite = "item_sliding"
     Manager.game_objects["NSitem_0_84"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_81"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_82"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_83"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_84"].sprite = "item_sliding"
     
     Manager.game_sprites["item_vision"].page_items[15] = 1315
     Manager.game_sprites["item_vision"].page_items[16] = 1315
@@ -179,7 +202,72 @@ def apply_enemy_color_rando_tweaks():
     pass
 
 def apply_chara_color_rando_tweaks():
+    #Neutralize the fog color of the Flandre fight
     Cosmetic.import_texture(6643)
+
+def set_reverse_start():
+    Manager.game_save["iSpawnPosX"]     = 6496
+    Manager.game_save["iSpawnPosY"]     = 1296
+    Manager.game_save["iSpawnStage"]    = 9
+    Gameplay.current_available_doors[0] = "Stage_04_19_Start"
+    #Disable some flags
+    Manager.game_save["bNitoriShipIntroFlag"] = True
+    Manager.game_save["bAkyuuIntroFlag"]      = True
+    Manager.game_save["bStage1FirstLoadFlag"] = True
+    Manager.game_save["bStage2FirstLoadFlag"] = True
+    Manager.game_save["bStage3FirstLoadFlag"] = True
+    Manager.game_save["bStage4FirstLoadFlag"] = True
+    Manager.game_save["bStage5FirstLoadFlag"] = True
+    Manager.game_save["bStage6FirstLoadFlag"] = True
+    #Allow going from the save back up to Remilia
+    Manager.apply_tilemap_patch("SavePointToRemilia")
+    #Allow going from the chainsaw check to Marisa
+    Manager.apply_tilemap_patch("LowerFloorToMarisa")
+    #Add a fake slide requirement
+    for door in Manager.constant["RoomLogic"]["Stage_04_19"]:
+        if "0_0_Right" in Manager.constant["RoomLogic"]["Stage_04_19"][door]:
+            Manager.constant["RoomLogic"]["Stage_04_19"][door]["0_0_Right"] = ["NSitem_0_80"]
+
+def set_all_keys_required():
+    Manager.apply_tilemap_patch("AllKeysRequired")
+    #Add 1 of each door back-to-back
+    Manager.game_entities[101295].x_pos = 3146
+    Manager.game_entities[101295].y_pos = 576
+    Manager.game_entities[101295].type = "door00"
+    Manager.game_entities[101295].creation_code = -1
+    
+    Manager.game_entities[101308].x_pos = 3170
+    Manager.game_entities[101308].y_pos = 576
+    Manager.game_entities[101308].type = "door00"
+    Manager.game_entities[101308].creation_code = 1850
+    
+    Manager.game_entities[101311].x_pos = 3194
+    Manager.game_entities[101311].y_pos = 576
+    Manager.game_entities[101311].type = "door00"
+    Manager.game_entities[101311].creation_code = 1884
+    
+    Manager.game_entities[101307].x_pos = 3218
+    Manager.game_entities[101307].y_pos = 576
+    Manager.game_entities[101307].type = "door00"
+    Manager.game_entities[101307].creation_code = 1847
+    
+    Manager.game_entities[101296].x_pos = 3242
+    Manager.game_entities[101296].y_pos = 576
+    Manager.game_entities[101296].type = "door00"
+    Manager.game_entities[101296].creation_code = 2035
+
+def unlock_extra_stage():
+    Manager.game_save["bFileClearFlag"] = True
+    special_check_to_requirement.clear()
+
+def set_one_hit_ko_mode():
+    Manager.game_save["iSpecialMode"] = 2
+
+def set_dash_spike_start():
+    Manager.game_save["lHasDashSpike"]        = True
+    Manager.game_save["bStage1FirstLoadFlag"] = True
+    Manager.game_save["iSpecialMode"]         = 1
+    Gameplay.starting_items.append("NSitem_0_84")
 
 def swap_skeleton_sprites():
     Manager.game_sprites["skeleton_run"].page_items    = Manager.game_sprites["skeleton_run_china"].page_items

@@ -1,7 +1,10 @@
 import Manager
+import Gameplay
 import Cosmetic
 
 def init():
+    global save_directory
+    save_directory = "Deedlit_in_Wonder_Labyrinth"
     global instance_to_offset_up
     instance_to_offset_up = {
         100050:  24,
@@ -82,8 +85,8 @@ def init():
     hardcoded_instance_to_item = {}
     global grounded_item_to_offset_up
     grounded_item_to_offset_up = {
-        "rock_switch_ob": 0,
-        "NSitem_0_91": 40
+        "rock_switch_ob":  0,
+        "NSitem_0_91":    40
     }
     global floating_item_offset_up
     floating_item_offset_up = 56
@@ -106,15 +109,6 @@ def init():
         "FSlide": [["NSitem_0_81", "NSitem_0_82"]],
         "SoulsK": [["NSitem_0_91.288", "NSitem_0_91.289", "NSitem_0_91.290", "NSitem_0_91.291", "NSitem_0_91.292"]]
     }
-    global map_colors
-    map_colors = [
-        "#71a839",
-        "#a83939",
-        "#3971a8",
-        "#a88d39",
-        "#7139a8",
-        "#1a805d"
-    ]
     global tileset_to_tile_blacklist
     tileset_to_tile_blacklist = {}
     global dialogue_skip
@@ -124,9 +118,50 @@ def init():
         "#s94",
         "#s99"
     ]
+    global map_colors
+    map_colors = [
+        "#71a839",
+        "#a83939",
+        "#3971a8",
+        "#a88d39",
+        "#7139a8",
+        "#1a805d"
+    ]
+    global tracker_to_save_watch
+    tracker_to_save_watch = {
+        "bow_item_ob.131":    "iCurrentBow",
+        "NSitem_0_81":        "iAbilityIndex",
+        "NSitem_0_82":        "iAbilityIndex",
+        "NSitem_0_83":        "iAbilityIndex",
+        "NSitem_0_84":        "iAbilityIndex",
+        "NSitem_0_85":        "iAbilityIndex",
+        "NSitem_0_91.289":    "lHasSoulKey1",
+        "NSitem_0_91.288":    "lHasSoulKey2",
+        "NSitem_0_91.292":    "lHasSoulKey3",
+        "NSitem_0_91.290":    "lHasSoulKey4",
+        "NSitem_0_91.291":    "lHasSoulKey5",
+        "rock_switch_ob.147": "bBlueSwitchActivated",
+        "rock_switch_ob.223": "bGreenSwitchActivated",
+        "rock_switch_ob.277": "bYellowSwitchActivated",
+        "rock_switch_ob.322": "bRedSwitchActivated",
+        "rock_switch_ob.390": "bPurpleSwitchActivated",
+        "rock_switch_ob.411": "bTealSwitchActivated",
+        "NSenemy_0_010":      "bAbramDefeatedFlag",
+        "NSenemy_0_020":      "bPirotess1DefeatedFlag",
+        "NSenemy_0_050":      "bSpiritBossDefeatedFlag",
+        "NSenemy_0_070":      "bShootingStarDefeatedFlag",
+        "NSenemy_0_120":      "bKarla1DefeatedFlag",
+        "NSenemy_0_100":      "bKarla2DefeatedFlag",
+        "NSenemy_0_130":      "bNarseDefeatedFlag",
+        "NSenemy_0_140":      "bPirotess2DefeatedFlag",
+        "NSenemy_0_160":      "bBeldDefeatedFlag",
+        "NSenemy_0_170":      "bAshramDefeatedFlag",
+        "NSenemy_0_200":      "bFileClearFlag"
+    }
 
 def apply_default_tweaks():
-    pass
+    #Fix the one door that appears squished
+    Manager.game_entities[100268].scale_x = 1.0
 
 def apply_key_logic_tweaks():
     #Remove the early fire barrels
@@ -146,32 +181,10 @@ def apply_key_logic_tweaks():
     
     Cosmetic.import_texture(7932)
     Cosmetic.import_texture(7933)
-    #Edit stage 4 to work around the parn kill cutscene crash
-    Manager.apply_tilemap_patch("ParnKillCrashFix")
-    
-    Manager.game_entities[100860].x_pos = 10528
-    instance_to_offset_up[100860] += 64
-    
-    Manager.game_entities[100858].x_pos = 6352
-    Manager.game_entities[100858].y_pos = 1920
-    Manager.game_entities[100858].type = "rock_door_ob"
-    Manager.game_entities[100858].creation_code = 328
-    
-    Manager.game_entities[100877].x_pos = 7600
-    Manager.game_entities[100877].y_pos = 2688
-    Manager.game_entities[100877].type = "gimmick_shutter"
-    Manager.game_entities[100877].creation_code = 136
-    
-    Manager.game_entities[100791].x_pos = 7600
-    Manager.game_entities[100791].y_pos = 3744
-    Manager.game_entities[100791].type = "gimmick_shutter"
-    Manager.game_entities[100791].creation_code = 136
-    #Add a platform to the stage 5 high jump check
-    Manager.apply_tilemap_patch("HighJumpAntiSoftlock")
-    #Add a platform to the stage 6 bow check
-    Manager.apply_tilemap_patch("ApollonAntiSoftlock")
+    #Disable the Parn kill cutscene
+    Manager.game_save["bParnKillCutsceneFlag"] = True
     #Block off the stage 6 teal gate shortcut
-    Manager.apply_tilemap_patch("TealShortcutRemoval")
+    Manager.apply_tilemap_patch("TealNoShortcut")
 
 def apply_progressive_ability_tweaks():
     #Update textures
@@ -222,6 +235,9 @@ def apply_progressive_ability_tweaks():
     Manager.game_objects["NSitem_0_81"].sprite = "item_sliding"
     Manager.game_objects["NSitem_0_83"].sprite = "item_sliding"
     Manager.game_objects["NSitem_0_84"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_81"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_83"].sprite = "item_sliding"
+    Manager.game_objects_backup["NSitem_0_84"].sprite = "item_sliding"
     
     Manager.game_sprites["item_vision"].page_items[15] = 3513
     Manager.game_sprites["item_vision"].page_items[17] = 3513
@@ -289,5 +305,79 @@ def apply_chara_color_rando_tweaks():
     #Neutralize the soul crusher effect color
     Cosmetic.import_texture(1062)
 
-def skip_boss_rush():
-    Manager.apply_tilemap_patch("SkipBossRush")
+def set_reverse_start():
+    Manager.game_save["iSpawnPosX"]     = 5232
+    Manager.game_save["iSpawnPosY"]     = 576
+    Manager.game_save["iSpawnStage"]    = 8
+    Gameplay.current_available_doors[0] = "Stage_03_46_Start"
+    #Disable some flags
+    Manager.game_save["bPirotess1DefeatedFlag"] = True
+    Manager.game_save["bStage1FirstLoadFlag"]   = True
+    Manager.game_save["bStage2FirstLoadFlag"]   = True
+    Manager.game_save["bStage3FirstLoadFlag"]   = True
+    Manager.game_save["bStage4FirstLoadFlag"]   = True
+    Manager.game_save["bStage5FirstLoadFlag"]   = True
+    Manager.game_save["bStage6FirstLoadFlag"]   = True
+    #Add heritage as a starting weapon
+    Manager.game_save["SSwordInventory"].append("=sword34")
+    #Open up a path below the stage 3 soul gate
+    Manager.apply_tilemap_patch("Stage3SoulGate")
+    Manager.constant["RoomLayout"]["Stage_02_30"]["Doors"].append("0_4_Top")
+    Manager.constant["RoomLayout"]["Stage_02_47"]["Doors"].append("0_0_Bottom")
+    Manager.constant["RoomLogic"]["Stage_02_30"]["0_4_Top"] = Manager.constant["RoomLogic"]["Stage_02_30"]["0_4_Left"]
+    Manager.constant["RoomLogic"]["Stage_02_47"]["0_0_Left"]["0_0_Bottom"] = []
+    #Allow going back up to the save in stage 4
+    Manager.apply_tilemap_patch("Stage4EntranceToSave")
+    #Don't consider the apollon check if purple gate isn't unlocked
+    Manager.constant["RoomLogic"]["Stage_05_02"]["0_0_Left"]["0_0_Right"] = ["rock_switch_ob.390"]
+    Manager.game_entities[101151].x_pos = 8288
+    Manager.game_entities[101151].y_pos = 3072
+    Manager.game_entities[101151].type = "rock_door_ob"
+    Manager.game_entities[101151].creation_code = 358
+    #Add a fake slide requirement
+    for door in Manager.constant["RoomLogic"]["Stage_03_23"]:
+        if "0_0_Left" in Manager.constant["RoomLogic"]["Stage_03_23"][door]:
+            Manager.constant["RoomLogic"]["Stage_03_23"][door]["0_0_Left"] = ["NSitem_0_82"]
+
+def set_all_keys_required():
+    Manager.apply_tilemap_patch("AllKeysRequired")
+    #Add 1 of each door back-to-back
+    Manager.game_entities[101158].x_pos = 8080
+    Manager.game_entities[101158].y_pos = 1984
+    Manager.game_entities[101158].type = "rock_door_ob"
+    Manager.game_entities[101158].creation_code = 150
+    
+    Manager.game_entities[101159].x_pos = 8048
+    Manager.game_entities[101159].y_pos = 1984
+    Manager.game_entities[101159].type = "rock_door_ob"
+    Manager.game_entities[101159].creation_code = 230
+    
+    Manager.game_entities[101164].x_pos = 8016
+    Manager.game_entities[101164].y_pos = 1984
+    Manager.game_entities[101164].type = "rock_door_ob"
+    Manager.game_entities[101164].creation_code = 308
+    
+    Manager.game_entities[101165].x_pos = 7984
+    Manager.game_entities[101165].y_pos = 1984
+    Manager.game_entities[101165].type = "rock_door_ob"
+    Manager.game_entities[101165].creation_code = 327
+    
+    Manager.game_entities[101166].x_pos = 7952
+    Manager.game_entities[101166].y_pos = 1984
+    Manager.game_entities[101166].type = "rock_door_ob"
+    Manager.game_entities[101166].creation_code = 358
+    
+    Manager.game_entities[101132].x_pos = 7920
+
+def remove_boss_rush():
+    Manager.game_save["bBossRushDefeatedFlag"] = True
+
+def set_player_level_1():
+    Manager.game_save["BSpecialModes"][2] = True
+
+def set_one_hit_ko_mode():
+    Manager.game_save["BSpecialModes"][3] = True
+    Gameplay.apply_extra_logic("OneHitLogic")
+
+def set_spirit_level_1():
+    Manager.game_save["BSpecialModes"][4] = True

@@ -3,6 +3,7 @@ import Gameplay
 import Cosmetic
 import MapHelper
 import MapViewer
+import ItemTracker
 import LunaNights
 import WonderLab
 
@@ -22,7 +23,7 @@ import subprocess
 
 #Get script name
 
-script_name, script_extension = os.path.splitext(os.path.basename(__file__))
+script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 #variables
 
@@ -39,7 +40,7 @@ config.read("Data\\config.ini")
 
 #Functions
 
-def writing():
+def write_config():
     with open("Data\\config.ini", "w") as file_writer:
         config.write(file_writer)
     sys.exit()
@@ -73,22 +74,13 @@ class Generate(QThread):
         self.signaller.progress.emit(current)
         
         #Backup files
-        if os.path.isfile(self.path + "\\data.bak"):
-            shutil.copyfile(self.path + "\\data.bak", self.path + "\\data.win")
-        else:
-            shutil.copyfile(self.path + "\\data.win", self.path + "\\data.bak")
-        
-        if os.path.isdir(self.path + "\\backup"):
-            shutil.rmtree(self.path + "\\data")
-            shutil.copytree(self.path + "\\backup", self.path + "\\data")
-        else:
-            shutil.copytree(self.path + "\\data", self.path + "\\backup")
+        shutil.copyfile(f"{self.path}\\data.win", f"{self.path}\\data.bak")
+        shutil.copytree(f"{self.path}\\data", f"{self.path}\\backup")
         
         #Init
         Gameplay.init()
         Cosmetic.init()
         MapHelper.init()
-        Manager.game.init()
         Manager.load_constant()
         
         current += 1
@@ -96,7 +88,9 @@ class Generate(QThread):
         self.progress_bar.setLabelText("Unpacking data...")
         
         Manager.unpack_game_data(self.path)
+        Manager.unpack_save_data()
         Manager.read_game_data()
+        Manager.get_save_file_path()
         
         current += 1
         self.signaller.progress.emit(current)
@@ -118,11 +112,37 @@ class Generate(QThread):
         if config.getboolean("Cosmetic", "bCharacterColors"):
             Manager.game.apply_chara_color_rando_tweaks()
         
-        if Manager.game == LunaNights and random.random() < 1/8:
-            LunaNights.swap_skeleton_sprites()
+        if config.getboolean("Extra", "bReverseRando"):
+            Manager.game.set_reverse_start()
         
-        if Manager.game == WonderLab and config.getboolean("Extra", "bSkipBossRush"):
-            WonderLab.skip_boss_rush()
+        if config.getboolean("Extra", "bRequireAllKeys"):
+            Manager.game.set_all_keys_required()
+        
+        if Manager.game == LunaNights:
+            if config.getboolean("Extra", "bSpeedrunLogic"):
+                Gameplay.apply_extra_logic("SpeedrunLogic")
+        
+            if config.getboolean("Extra", "bStage6Unlocked"):
+                LunaNights.unlock_extra_stage()
+            
+            if config.getboolean("Extra", "bStartWithDash"):
+                LunaNights.set_dash_spike_start()
+            
+            if random.random() < 1/8:
+                LunaNights.swap_skeleton_sprites()
+        
+        if Manager.game == WonderLab:
+            if config.getboolean("Extra", "bSkipBossRush"):
+                WonderLab.remove_boss_rush()
+        
+            if config.getboolean("Extra", "bPlayerLevel1"):
+                WonderLab.set_player_level_1()
+            
+            if config.getboolean("Extra", "bSpiritLevel1"):
+                WonderLab.set_spirit_level_1()
+        
+        if config.getboolean("Extra", "bOneHitKOMode"):
+            Manager.game.set_one_hit_ko_mode()
         
         current += 1
         self.signaller.progress.emit(current)
@@ -131,12 +151,12 @@ class Generate(QThread):
         Gameplay.categorize_items()
         Gameplay.set_logic_complexity(config.getint("Gameplay", "iLogicComplexity"))
         Gameplay.set_enemy_type_wheight(config.getint("Gameplay", "iEnemyTypesWeight"))
-        Gameplay.set_room_logic(config.getboolean("Extra", "bSpeedrunLogic"))
         
         if config.getboolean("Gameplay", "bKeyItems"):
             Gameplay.add_item_type("Key")
-            if Manager.game == LunaNights and not config.getboolean("Gameplay", "bUpgrades") and not config.getboolean("Gameplay", "bSpells") and config.getboolean("Gameplay", "bJewels"):
-                Gameplay.remove_hardcoded_items()
+            if Manager.game == LunaNights and config.getboolean("Gameplay", "bGemTowers"):
+                if not config.getboolean("Gameplay", "bUpgrades") and not config.getboolean("Gameplay", "bSpells"):
+                    Gameplay.remove_hardcoded_items()
             MapHelper.get_map_info()
         
         if config.getboolean("Gameplay", "bUpgrades"):
@@ -145,8 +165,8 @@ class Generate(QThread):
         if config.getboolean("Gameplay", "bSpells"):
             Gameplay.add_item_type("Spell")
         
-        if config.getboolean("Gameplay", "bJewels"):
-            Gameplay.add_item_type("Jewel")
+        if config.getboolean("Gameplay", "bGemTowers"):
+            Gameplay.add_item_type("Gem")
         
         if config.getboolean("Gameplay", "bWeapons"):
             Gameplay.add_item_type("Weapon")
@@ -155,6 +175,7 @@ class Generate(QThread):
             random.seed(self.seed)
             Gameplay.process_key_logic()
             Gameplay.write_spoiler_log(self.seed)
+            Gameplay.write_save_info()
         
         random.seed(self.seed)
         Gameplay.randomize_items()
@@ -162,6 +183,10 @@ class Generate(QThread):
         if config.getboolean("Gameplay", "bEnemyTypes"):
             random.seed(self.seed)
             Gameplay.randomize_enemies()
+        
+        current += 1
+        self.signaller.progress.emit(current)
+        self.progress_bar.setLabelText("Randomizing music...")
         
         if config.getboolean("Cosmetic", "bBackgroundMusic"):
             random.seed(self.seed)
@@ -202,6 +227,7 @@ class Generate(QThread):
         
         Cosmetic.save_game_textures()
         Manager.write_game_data()
+        Manager.repack_save_data()
         Manager.repack_game_data(self.path)
         
         current += 1
@@ -214,8 +240,14 @@ class Update(QThread):
         self.signaller = Signaller()
         self.progress_bar = progress_bar
         self.api = api
-
+    
     def run(self):
+        try:
+            self.process()
+        except Exception:
+            self.signaller.error.emit(traceback.format_exc())
+
+    def process(self):
         progress = 0
         zip_name = "Ladybug Randomizer.zip"
         exe_name = script_name + ".exe"
@@ -264,7 +296,7 @@ class Update(QThread):
 
 #Interface
 
-class DropFolder(QObject):    
+class DropFolder(QObject):
     def eventFilter(self, watched, event):
         if event.type() == QEvent.DragEnter:
             md = event.mimeData()
@@ -278,14 +310,26 @@ class DropFolder(QObject):
             return True
         return super().eventFilter(watched, event)
 
-class Main(QWidget):
+class QCheckBox(QCheckBox):
+    def nextCheckState(self):
+        if self.checkState() == Qt.Unchecked:
+            self.setCheckState(Qt.PartiallyChecked)
+        elif self.checkState() == Qt.PartiallyChecked:
+            self.setCheckState(Qt.Unchecked)
+    
+    def checkStateSet(self):
+        super().checkStateSet()
+        if self.checkState() == Qt.Checked:
+            self.setCheckState(Qt.PartiallyChecked)
+
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setEnabled(False)
-        self.initUI()
+        self.init()
         self.check_for_updates()
 
-    def initUI(self):
+    def init(self):
         
         #Main layout
         
@@ -335,58 +379,117 @@ class Main(QWidget):
         self.check_box_3.stateChanged.connect(self.check_box_3_changed)
         box_1_grid.addWidget(self.check_box_3, 2, 0)
 
-        self.check_box_4 = QCheckBox("Jewels")
-        self.check_box_4.setToolTip("Include breakable jewel towers in the item pool.")
+        self.check_box_4 = QCheckBox("Gem Towers")
+        self.check_box_4.setToolTip("Include gem towers in the item pool.")
         self.check_box_4.stateChanged.connect(self.check_box_4_changed)
         box_1_grid.addWidget(self.check_box_4, 3, 0)
 
-        self.check_box_5 = QCheckBox("Weapons")
-        self.check_box_5.setToolTip("Include weapons and bows in the item pool.")
+        self.check_box_19 = QCheckBox("Weapons")
+        self.check_box_19.setToolTip("Include swords and bows in the item pool.")
+        self.check_box_19.stateChanged.connect(self.check_box_19_changed)
+        box_1_grid.addWidget(self.check_box_19, 3, 0)
+        
+        self.check_box_5 = QCheckBox("Enemy Types")
+        self.check_box_5.setToolTip("Shuffle enemies by type.")
         self.check_box_5.stateChanged.connect(self.check_box_5_changed)
-        box_1_grid.addWidget(self.check_box_5, 3, 0)
-        
-        self.check_box_6 = QCheckBox("Enemy Types")
-        self.check_box_6.setToolTip("Shuffle enemies by type.")
+        box_1_grid.addWidget(self.check_box_5, 4, 0)
+
+        self.check_box_6 = QCheckBox("Background Music")
+        self.check_box_6.setToolTip("Shuffle music tracks by type.")
         self.check_box_6.stateChanged.connect(self.check_box_6_changed)
-        box_1_grid.addWidget(self.check_box_6, 4, 0)
+        box_2_grid.addWidget(self.check_box_6, 0, 0)
 
-        self.check_box_7 = QCheckBox("Background Music")
-        self.check_box_7.setToolTip("Shuffle music tracks by type.")
+        self.check_box_7 = QCheckBox("World Colors")
+        self.check_box_7.setToolTip("Randomize the hue of tilesets and backgrounds.")
         self.check_box_7.stateChanged.connect(self.check_box_7_changed)
-        box_2_grid.addWidget(self.check_box_7, 0, 0)
+        box_2_grid.addWidget(self.check_box_7, 1, 0)
 
-        self.check_box_8 = QCheckBox("World Colors")
-        self.check_box_8.setToolTip("Randomize the hue of tilesets and backgrounds.")
+        self.check_box_8 = QCheckBox("Enemy Colors")
+        self.check_box_8.setToolTip("Randomize the hue of enemy sprites.")
         self.check_box_8.stateChanged.connect(self.check_box_8_changed)
-        box_2_grid.addWidget(self.check_box_8, 1, 0)
+        box_2_grid.addWidget(self.check_box_8, 2, 0)
 
-        self.check_box_9 = QCheckBox("Enemy Colors")
-        self.check_box_9.setToolTip("Randomize the hue of enemy sprites.")
+        self.check_box_9 = QCheckBox("Character Colors")
+        self.check_box_9.setToolTip("Randomize the hue of character sprites.")
         self.check_box_9.stateChanged.connect(self.check_box_9_changed)
-        box_2_grid.addWidget(self.check_box_9, 2, 0)
-
-        self.check_box_10 = QCheckBox("Character Colors")
-        self.check_box_10.setToolTip("Randomize the hue of character sprites.")
-        self.check_box_10.stateChanged.connect(self.check_box_10_changed)
-        box_2_grid.addWidget(self.check_box_10, 3, 0)
+        box_2_grid.addWidget(self.check_box_9, 3, 0)
         
-        self.check_box_11 = QCheckBox("Dialogues")
-        self.check_box_11.setToolTip("Randomize all conversation lines.")
-        self.check_box_11.stateChanged.connect(self.check_box_11_changed)
-        box_2_grid.addWidget(self.check_box_11, 4, 0)
-
-        self.check_box_12 = QCheckBox("Speedrun Logic")
-        self.check_box_12.setToolTip("Switch to a progression logic that may require\nspeedrun tricks, glitches and taking damage.")
+        self.check_box_10 = QCheckBox("Dialogues")
+        self.check_box_10.setToolTip("Randomize all conversation lines.")
+        self.check_box_10.stateChanged.connect(self.check_box_10_changed)
+        box_2_grid.addWidget(self.check_box_10, 4, 0)
+        
+        self.check_box_18 = QCheckBox("Reverse Rando")
+        self.check_box_18.setToolTip("Start the game near the top of the map.")
+        self.check_box_18.stateChanged.connect(self.check_box_18_changed)
+        box_3_grid.addWidget(self.check_box_18, 0, 0)
+        retain = self.check_box_18.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_18.setSizePolicy(retain)
+        
+        self.check_box_20 = QCheckBox("Require All Keys")
+        self.check_box_20.setToolTip("Force acquiring all colored keys/switches\nto reach the final boss.")
+        self.check_box_20.stateChanged.connect(self.check_box_20_changed)
+        box_3_grid.addWidget(self.check_box_20, 1, 0)
+        retain = self.check_box_20.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_20.setSizePolicy(retain)
+        
+        self.check_box_12 = QCheckBox("Stage 6 Unlocked")
+        self.check_box_12.setToolTip("Have the extra stage available from the start,\nno longer requiring Flandre to unlock.")
         self.check_box_12.stateChanged.connect(self.check_box_12_changed)
-        box_3_grid.addWidget(self.check_box_12, 0, 0)
+        box_3_grid.addWidget(self.check_box_12, 0, 1)
+        retain = self.check_box_12.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_12.setSizePolicy(retain)
         
         self.check_box_13 = QCheckBox("Skip Boss Rush")
-        self.check_box_13.setToolTip("Allow going around the boss rush at the end of stage 6.")
+        self.check_box_13.setToolTip("Remove the boss rush at the end of stage 6.")
         self.check_box_13.stateChanged.connect(self.check_box_13_changed)
-        box_3_grid.addWidget(self.check_box_13, 1, 0)
+        box_3_grid.addWidget(self.check_box_13, 0, 1)
         retain = self.check_box_13.sizePolicy()
         retain.setRetainSizeWhenHidden(True)
         self.check_box_13.setSizePolicy(retain)
+
+        self.check_box_11 = QCheckBox("Speedrun Logic")
+        self.check_box_11.setToolTip("Switch to a progression logic that may require\nspeedrun tricks, glitches and taking damage.")
+        self.check_box_11.stateChanged.connect(self.check_box_11_changed)
+        box_3_grid.addWidget(self.check_box_11, 1, 1)
+        retain = self.check_box_11.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_11.setSizePolicy(retain)
+        
+        self.check_box_15 = QCheckBox("Player Level 1")
+        self.check_box_15.setToolTip("Enable the built-in player level 1 locked mode.")
+        self.check_box_15.stateChanged.connect(self.check_box_15_changed)
+        box_3_grid.addWidget(self.check_box_15, 1, 1)
+        retain = self.check_box_15.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_15.setSizePolicy(retain)
+        
+        self.check_box_16 = QCheckBox("One Hit KO Mode")
+        self.check_box_16.setToolTip("Enable the built-in 1 HP locked mode.")
+        self.check_box_16.stateChanged.connect(self.check_box_16_changed)
+        box_3_grid.addWidget(self.check_box_16, 0, 2)
+        retain = self.check_box_16.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_16.setSizePolicy(retain)
+        
+        self.check_box_14 = QCheckBox("Start With Dash")
+        self.check_box_14.setToolTip("Start the game with the Dash Spike ability.\nUnlike the built-in mode this will not give\nyou all the spells from the start.")
+        self.check_box_14.stateChanged.connect(self.check_box_14_changed)
+        box_3_grid.addWidget(self.check_box_14, 1, 2)
+        retain = self.check_box_14.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_14.setSizePolicy(retain)
+        
+        self.check_box_17 = QCheckBox("Spirit Level 1")
+        self.check_box_17.setToolTip("Enable the built-in spirit level 1 locked mode.")
+        self.check_box_17.stateChanged.connect(self.check_box_17_changed)
+        box_3_grid.addWidget(self.check_box_17, 1, 2)
+        retain = self.check_box_17.sizePolicy()
+        retain.setRetainSizeWhenHidden(True)
+        self.check_box_17.setSizePolicy(retain)
         
         #SpinButtons
         
@@ -421,7 +524,6 @@ class Main(QWidget):
         self.seed_layout = QGridLayout()
         
         self.seed_field = QLineEdit(config.get("Misc", "sSeed"))
-        self.seed_field.setStyleSheet("color: #ffffff")
         self.seed_field.setMaxLength(30)
         self.seed_field.textChanged[str].connect(self.new_seed)
         self.seed_layout.addWidget(self.seed_field, 0, 0, 1, 2)
@@ -439,18 +541,25 @@ class Main(QWidget):
         self.check_box_1.setChecked(config.getboolean("Gameplay", "bKeyItems"))
         self.check_box_2.setChecked(config.getboolean("Gameplay", "bUpgrades"))
         self.check_box_3.setChecked(config.getboolean("Gameplay", "bSpells"))
-        self.check_box_4.setChecked(config.getboolean("Gameplay", "bJewels"))
-        self.check_box_5.setChecked(config.getboolean("Gameplay", "bWeapons"))
-        self.check_box_6.setChecked(config.getboolean("Gameplay", "bEnemyTypes"))
+        self.check_box_4.setChecked(config.getboolean("Gameplay", "bGemTowers"))
+        self.check_box_19.setChecked(config.getboolean("Gameplay", "bWeapons"))
+        self.check_box_5.setChecked(config.getboolean("Gameplay", "bEnemyTypes"))
         
-        self.check_box_7.setChecked(config.getboolean("Cosmetic", "bBackgroundMusic"))
-        self.check_box_8.setChecked(config.getboolean("Cosmetic", "bWorldColors"))
-        self.check_box_9.setChecked(config.getboolean("Cosmetic", "bEnemyColors"))
-        self.check_box_10.setChecked(config.getboolean("Cosmetic", "bCharacterColors"))
-        self.check_box_11.setChecked(config.getboolean("Cosmetic", "bDialogues"))
+        self.check_box_6.setChecked(config.getboolean("Cosmetic", "bBackgroundMusic"))
+        self.check_box_7.setChecked(config.getboolean("Cosmetic", "bWorldColors"))
+        self.check_box_8.setChecked(config.getboolean("Cosmetic", "bEnemyColors"))
+        self.check_box_9.setChecked(config.getboolean("Cosmetic", "bCharacterColors"))
+        self.check_box_10.setChecked(config.getboolean("Cosmetic", "bDialogues"))
         
-        self.check_box_12.setChecked(config.getboolean("Extra", "bSpeedrunLogic"))
+        self.check_box_18.setChecked(config.getboolean("Extra", "bReverseRando"))
+        self.check_box_20.setChecked(config.getboolean("Extra", "bRequireAllKeys"))
+        self.check_box_12.setChecked(config.getboolean("Extra", "bStage6Unlocked"))
         self.check_box_13.setChecked(config.getboolean("Extra", "bSkipBossRush"))
+        self.check_box_11.setChecked(config.getboolean("Extra", "bSpeedrunLogic"))
+        self.check_box_15.setChecked(config.getboolean("Extra", "bPlayerLevel1"))
+        self.check_box_16.setChecked(config.getboolean("Extra", "bOneHitKOMode"))
+        self.check_box_14.setChecked(config.getboolean("Extra", "bStartWithDash"))
+        self.check_box_17.setChecked(config.getboolean("Extra", "bSpiritLevel1"))
         
         self.spin_button_1_set_index(config.getint("Gameplay", "iLogicComplexity"))
         self.spin_button_2_set_index(config.getint("Gameplay", "iEnemyTypesWeight"))
@@ -481,15 +590,20 @@ class Main(QWidget):
         button_1.clicked.connect(self.button_1_clicked)
         button_hbox.addWidget(button_1)
         
-        button_2 = QPushButton("Restore Vanilla")
+        button_2 = QPushButton("Reset Game")
         button_2.setToolTip("Revert game directory back to vanilla.")
         button_2.clicked.connect(self.button_2_clicked)
         button_hbox.addWidget(button_2)
         
-        button_3 = QPushButton("Load Spoilers")
+        button_3 = QPushButton("Load Spoiler")
         button_3.setToolTip("Display solution from a spoiler log.")
         button_3.clicked.connect(self.button_3_clicked)
         button_hbox.addWidget(button_3)
+        
+        button_4 = QPushButton("Item Tracker")
+        button_4.setToolTip("Open up an item tracker window for a randomized game.")
+        button_4.clicked.connect(self.button_4_clicked)
+        button_hbox.addWidget(button_4)
         
         main_vbox.addLayout(button_hbox)
         
@@ -517,7 +631,10 @@ class Main(QWidget):
         checked = self.check_box_1.isChecked()
         config.set("Gameplay", "bKeyItems", str(checked).lower())
         self.spin_button_1.setVisible(checked)
-        self.reset_visuals()
+        if not checked:
+            self.check_box_11.setChecked(False)
+            self.check_box_18.setChecked(False)
+        self.fix_background_glitch()
 
     def check_box_2_changed(self):
         checked = self.check_box_2.isChecked()
@@ -529,45 +646,85 @@ class Main(QWidget):
 
     def check_box_4_changed(self):
         checked = self.check_box_4.isChecked()
-        config.set("Gameplay", "bJewels", str(checked).lower())
+        config.set("Gameplay", "bGemTowers", str(checked).lower())
+
+    def check_box_19_changed(self):
+        checked = self.check_box_19.isChecked()
+        config.set("Gameplay", "bWeapons", str(checked).lower())
 
     def check_box_5_changed(self):
         checked = self.check_box_5.isChecked()
-        config.set("Gameplay", "bWeapons", str(checked).lower())
+        config.set("Gameplay", "bEnemyTypes", str(checked).lower())
+        self.spin_button_2.setVisible(checked)
+        self.fix_background_glitch()
 
     def check_box_6_changed(self):
         checked = self.check_box_6.isChecked()
-        config.set("Gameplay", "bEnemyTypes", str(checked).lower())
-        self.spin_button_2.setVisible(checked)
-        self.reset_visuals()
+        config.set("Cosmetic", "bBackgroundMusic", str(checked).lower())
 
     def check_box_7_changed(self):
         checked = self.check_box_7.isChecked()
-        config.set("Cosmetic", "bBackgroundMusic", str(checked).lower())
+        config.set("Cosmetic", "bWorldColors", str(checked).lower())
 
     def check_box_8_changed(self):
         checked = self.check_box_8.isChecked()
-        config.set("Cosmetic", "bWorldColors", str(checked).lower())
+        config.set("Cosmetic", "bEnemyColors", str(checked).lower())
 
     def check_box_9_changed(self):
         checked = self.check_box_9.isChecked()
-        config.set("Cosmetic", "bEnemyColors", str(checked).lower())
+        config.set("Cosmetic", "bCharacterColors", str(checked).lower())
 
     def check_box_10_changed(self):
         checked = self.check_box_10.isChecked()
-        config.set("Cosmetic", "bCharacterColors", str(checked).lower())
+        config.set("Cosmetic", "bDialogues", str(checked).lower())
+
+    def check_box_20_changed(self):
+        checked = self.check_box_20.isChecked()
+        config.set("Extra", "bRequireAllKeys", str(checked).lower())
 
     def check_box_11_changed(self):
         checked = self.check_box_11.isChecked()
-        config.set("Cosmetic", "bDialogues", str(checked).lower())
+        config.set("Extra", "bSpeedrunLogic", str(checked).lower())
+        if checked:
+            self.check_box_1.setChecked(True)
+            self.check_box_16.setChecked(False)
+
+    def check_box_18_changed(self):
+        checked = self.check_box_18.isChecked()
+        config.set("Extra", "bReverseRando", str(checked).lower())
+        if checked:
+            self.check_box_1.setChecked(True)
+            self.check_box_16.setChecked(False)
 
     def check_box_12_changed(self):
         checked = self.check_box_12.isChecked()
-        config.set("Extra", "bSpeedrunLogic", str(checked).lower())
+        config.set("Extra", "bStage6Unlocked", str(checked).lower())
 
     def check_box_13_changed(self):
         checked = self.check_box_13.isChecked()
         config.set("Extra", "bSkipBossRush", str(checked).lower())
+
+    def check_box_14_changed(self):
+        checked = self.check_box_14.isChecked()
+        config.set("Extra", "bStartWithDash", str(checked).lower())
+        if checked:
+            self.check_box_16.setChecked(False)
+
+    def check_box_15_changed(self):
+        checked = self.check_box_15.isChecked()
+        config.set("Extra", "bPlayerLevel1", str(checked).lower())
+
+    def check_box_16_changed(self):
+        checked = self.check_box_16.isChecked()
+        config.set("Extra", "bOneHitKOMode", str(checked).lower())
+        if checked:
+            self.check_box_11.setChecked(False)
+            self.check_box_14.setChecked(False)
+            self.check_box_18.setChecked(False)
+
+    def check_box_17_changed(self):
+        checked = self.check_box_17.isChecked()
+        config.set("Extra", "bSpiritLevel1", str(checked).lower())
 
     def spin_button_1_clicked(self):
         index = int(self.spin_button_1.text())
@@ -588,45 +745,53 @@ class Main(QWidget):
         config.set("Gameplay", "iEnemyTypesWeight", str(index))
     
     def radio_button_group_1_checked(self):
-        config.set("Game", "bLunaNights", str(self.radio_button_1.isChecked()).lower())
-        config.set("Game", "bWonderLab", str(self.radio_button_2.isChecked()).lower())
-        self.check_box_4.setVisible(self.radio_button_1.isChecked())
-        self.check_box_5.setVisible(self.radio_button_2.isChecked())
-        self.check_box_13.setVisible(self.radio_button_2.isChecked())
-        if self.radio_button_1.isChecked():
-            self.output_field.setText(config.get("Misc", "sLunaNightsGameDir"))
-        if self.radio_button_2.isChecked():
-            self.output_field.setText(config.get("Misc", "sWonderLabGameDir"))
+        checked_1 = self.radio_button_1.isChecked()
+        checked_2 = self.radio_button_2.isChecked()
+        config.set("Game", "bLunaNights", str(checked_1).lower())
+        config.set("Game", "bWonderLab", str(checked_2).lower())
+        self.check_box_4.setVisible(checked_1)
+        self.check_box_19.setVisible(checked_2)
+        self.check_box_11.setVisible(checked_1)
+        self.check_box_12.setVisible(checked_1)
+        self.check_box_14.setVisible(checked_1)
+        self.check_box_13.setVisible(checked_2)
+        self.check_box_15.setVisible(checked_2)
+        self.check_box_17.setVisible(checked_2)
+        game = "LunaNights" if config.getboolean("Game", "bLunaNights") else "WonderLab"
+        self.output_field.setText(config.get("Misc", f"s{game}GameDir"))
         self.reset_visuals()
     
     def reset_visuals(self):
         #Determine game
-        if config.getboolean("Game", "bLunaNights"):
-            game = "LunaNights"
-        if config.getboolean("Game", "bWonderLab"):
-            game = "WonderLab"
+        game = "LunaNights" if config.getboolean("Game", "bLunaNights") else "WonderLab"
         main_color = game_to_visuals[game][0]
         sub_color  = game_to_visuals[game][1]
         #Update colors
-        self.setStyleSheet("QWidget{background:transparent; color: #ffffff; font-family: Cambria; font-size: 18px}"
+        self.setStyleSheet("QWidget{background: transparent; color: #ffffff; font-family: Cambria; font-size: 18px}"
         + "QMessageBox{background-color: " + main_color + "}"
         + "QDialog{background-color: " + main_color + "}"
         + "QProgressDialog{background-color: " + main_color + "}"
         + "QPushButton{background-color: " + main_color + "}"
         + "QLineEdit{background-color: " + main_color + "; selection-background-color: " + sub_color + "}"
         + "QProgressBar{border: 2px solid white; text-align: center; font: bold}"
-        + "QToolTip{border: 0px; background-color: " + main_color + "; color: #ffffff; font-family: Cambria; font-size: 18px}")
+        + "QToolTip{border: 1px solid white; background-color: " + main_color + "; color: #ffffff; font-family: Cambria; font-size: 18px}")
         #Update background
-        background = QPixmap("Data\\" + game + "\\background.png")
-        palette = QPalette()
-        palette.setBrush(QPalette.Window, background)
-        self.setPalette(palette)
+        background = QPixmap(f"Data\\{game}\\background.png")
+        self.palette = QPalette()
+        self.palette.setBrush(QPalette.Window, background)
+        self.setPalette(self.palette)
+    
+    def fix_background_glitch(self):
+        try:
+            self.box_1.setStyleSheet("")
+            QApplication.processEvents()
+            self.setPalette(self.palette)
+        except TypeError:
+            return
     
     def new_output(self, output):
-        if config.getboolean("Game", "bLunaNights"):
-            config.set("Misc", "sLunaNightsGameDir", output)
-        if config.getboolean("Game", "bWonderLab"):
-            config.set("Misc", "sWonderLabGameDir", output)
+        game = "LunaNights" if config.getboolean("Game", "bLunaNights") else "WonderLab"
+        config.set("Misc", f"s{game}GameDir", output)
     
     def new_seed(self, text):
         if " " in text:
@@ -662,20 +827,16 @@ class Main(QWidget):
     def button_1_clicked(self):
         
         #Determine game
-        if config.getboolean("Game", "bLunaNights"):
-            Manager.init(LunaNights)
-        else:
-            Manager.init(WonderLab)
-        
-        game_path = config.get("Misc", "s" + Manager.game_name + "GameDir")
+        Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
+        game_path = config.get("Misc", f"s{Manager.game_name}GameDir")
         
         #Check path
         if not os.path.isdir(game_path):
-            self.no_path()
+            self.game_path_invalid()
             return
         
         #Seed prompt
-        self.seed = ""
+        self.seed = None
         self.seed_box = QDialog(self)
         self.seed_box.setLayout(self.seed_layout)
         self.seed_box.setWindowTitle("Seed")
@@ -686,7 +847,10 @@ class Main(QWidget):
         self.setEnabled(False)
         QApplication.processEvents()
         
-        self.progress_bar = QProgressDialog("Initializing...", None, 0, 8, self)
+        Manager.game.init()
+        self.restore_vanilla(game_path)
+        
+        self.progress_bar = QProgressDialog("Initializing...", None, 0, 9, self)
         self.progress_bar.setFixedSize(280, 80)
         self.progress_bar.setWindowTitle("Status")
         self.progress_bar.setWindowModality(Qt.WindowModal)
@@ -700,28 +864,19 @@ class Main(QWidget):
     def button_2_clicked(self):
         
         #Determine game
-        if config.getboolean("Game", "bLunaNights"):
-            Manager.init(LunaNights)
-        else:
-            Manager.init(WonderLab)
-        
-        game_path = config.get("Misc", "s" + Manager.game_name + "GameDir")
+        Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
+        game_path = config.get("Misc", f"s{Manager.game_name}GameDir")
         
         #Check path
         if not os.path.isdir(game_path):
-            self.no_path()
+            self.game_path_invalid()
             return
         
         self.setEnabled(False)
         QApplication.processEvents()
         
-        #Restore files
-        if os.path.isfile(game_path + "\\data.bak"):
-            os.remove(game_path + "\\data.win")
-            os.rename(game_path + "\\data.bak", game_path + "\\data.win")
-        if os.path.isdir(game_path + "\\backup"):
-            shutil.rmtree(game_path + "\\data")
-            os.rename(game_path + "\\backup", game_path + "\\data")
+        Manager.game.init()
+        self.restore_vanilla(game_path)
         
         self.setEnabled(True)
         box = QMessageBox(self)
@@ -731,35 +886,62 @@ class Main(QWidget):
     
     def button_3_clicked(self):
         file = QFileDialog.getOpenFileName(parent=self, caption="File", filter="*.json")[0].replace("/", "\\")
-        if file:
-            name, extension = os.path.splitext(file)
-            filename = name.split("\\")[-1]
-            with open(file, "r", encoding="utf8") as file_reader:
-                spoiler = json.load(file_reader)
-            
-            #Determine game
-            if config.getboolean("Game", "bLunaNights"):
-                Manager.init(LunaNights)
-            else:
-                Manager.init(WonderLab)
-            
-            #Check game
-            if Manager.game_name != filename.split(" - ")[0]:
-                box = QMessageBox(self)
-                box.setWindowTitle("Warning")
-                box.setIcon(QMessageBox.Critical)
-                box.setText("Game mismatch !")
-                box.exec()
-                return
-            
-            Manager.game.init()
-            Manager.load_constant()
-            
-            MapHelper.init()
-            MapHelper.get_map_info()
-            MapHelper.fill_check_to_room()
-            
-            self.map_viewer = MapViewer.MainWindow(filename.split(" - ")[1], spoiler)
+        if not file:
+            return
+        
+        file_name = os.path.split(os.path.splitext(file)[0])[-1]
+        game_name, seed = file_name.split(" - ")
+        with open(file, "r", encoding="utf8") as file_reader:
+            spoiler = json.load(file_reader)
+        
+        #Determine game
+        Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
+        
+        #Check game
+        if Manager.game_name != game_name:
+            box = QMessageBox(self)
+            box.setWindowTitle("Warning")
+            box.setIcon(QMessageBox.Critical)
+            box.setText("Game mismatch !")
+            box.exec()
+            return
+        
+        Manager.game.init()
+        Manager.load_constant()
+        
+        MapHelper.init()
+        MapHelper.get_map_info()
+        MapHelper.fill_check_to_room()
+        
+        self.map_viewer = MapViewer.MainWindow(seed, spoiler)
+    
+    def button_4_clicked(self):
+        #Determine game
+        Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
+        
+        Manager.game.init()
+        Manager.load_constant()
+        
+        save_info_list = Manager.get_save_info_list()
+        
+        #Check save info
+        if not save_info_list:
+            box = QMessageBox(self)
+            box.setWindowTitle("Warning")
+            box.setIcon(QMessageBox.Critical)
+            box.setText("No active randomizer saves found !")
+            box.exec()
+            return
+        if len(save_info_list) != 1:
+            box = QMessageBox(self)
+            box.setWindowTitle("Warning")
+            box.setIcon(QMessageBox.Critical)
+            box.setText("Multiple active randomizer saves found !")
+            box.exec()
+            return
+        
+        save_file_path = os.path.splitext(save_info_list[0])[0]
+        self.item_tracker = ItemTracker.MainWindow(f"{save_file_path}.sav")
     
     def browse_button_clicked(self):
         path = QFileDialog.getExistingDirectory(self, "Folder").replace("/", "\\")
@@ -775,15 +957,26 @@ class Main(QWidget):
             return
         #Cast seed to another object type if possible
         try:
-            if "." in self.seed:
-                self.seed = float(self.seed)
-            else:
-                self.seed = int(self.seed)
+            self.seed = float(self.seed) if "." in self.seed else int(self.seed)
         except ValueError:
             pass
         self.seed_box.close()
     
-    def no_path(self):
+    def restore_vanilla(self, game_path):
+        #Restore game files
+        if os.path.isfile(f"{game_path}\\data.bak"):
+            os.remove(f"{game_path}\\data.win")
+            os.rename(f"{game_path}\\data.bak", f"{game_path}\\data.win")
+        if os.path.isdir(f"{game_path}\\backup"):
+            shutil.rmtree(f"{game_path}\\data")
+            os.rename(f"{game_path}\\backup", f"{game_path}\\data")
+        #Reset save files
+        for file in Manager.get_save_file_list():
+            os.remove(file)
+        for file in Manager.get_save_info_list():
+            os.remove(file)
+    
+    def game_path_invalid(self):
         box = QMessageBox(self)
         box.setWindowTitle("Warning")
         box.setIcon(QMessageBox.Critical)
@@ -815,6 +1008,7 @@ class Main(QWidget):
                 self.worker = Update(self.progress_bar, api)
                 self.worker.signaller.progress.connect(self.set_progress)
                 self.worker.signaller.finished.connect(self.update_finished)
+                self.worker.signaller.error.connect(self.thread_failure)
                 self.worker.start()
             else:
                 self.setEnabled(True)
@@ -823,8 +1017,8 @@ class Main(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    app.aboutToQuit.connect(writing)
-    main = Main()
+    app.aboutToQuit.connect(write_config)
+    main = MainWindow()
     sys.exit(app.exec())
 
 if __name__ == '__main__':

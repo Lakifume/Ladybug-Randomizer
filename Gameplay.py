@@ -19,13 +19,15 @@ def init():
     global current_available_checks
     current_available_checks = []
     global all_available_doors
-    all_available_doors = copy.deepcopy(current_available_doors)
+    all_available_doors = []
     global all_available_checks
     all_available_checks = []
     global check_to_requirement
     check_to_requirement = {}
     global key_item_to_location
     key_item_to_location = {}
+    global starting_items
+    starting_items = []
     global next_ability_index
     next_ability_index = 0
     global special_check_to_door
@@ -49,12 +51,11 @@ def set_enemy_type_wheight(wheight):
     global enemy_type_wheight
     enemy_type_wheight = wheight*2
 
-def set_room_logic(is_speedrun):
-    global room_logic
-    if is_speedrun:
-        room_logic = Manager.constant["SpeedrunLogic"]
-    else:
-        room_logic = Manager.constant["CasualLogic"]
+def apply_extra_logic(logic_name):
+    for room in Manager.constant[logic_name]:
+        for door in Manager.constant[logic_name][room]:
+            for check in Manager.constant[logic_name][room][door]:
+                Manager.constant["RoomLogic"][room][door][check] = Manager.constant[logic_name][room][door][check]
 
 def categorize_items():
     for item in Manager.constant["ItemInfo"]:
@@ -124,7 +125,7 @@ def has_unreachable_ability(requirement):
 def check_requirement(requirement):
     if requirement in Manager.game.macro_to_requirements:
         return satisfies_requirement(Manager.game.macro_to_requirements[requirement])
-    return requirement in key_item_to_location
+    return requirement in key_item_to_location or requirement in starting_items
 
 def check_unreachable_ability(requirement):
     if requirement in Manager.game.macro_to_requirements:
@@ -134,13 +135,38 @@ def check_unreachable_ability(requirement):
     return False
 
 def process_key_logic():
+    move_through_rooms()
     while True:
-        #Move through rooms
+        #Place key item
+        if check_to_requirement:
+            #Weight checks
+            requirement_list_list = []
+            for check in check_to_requirement:
+                requirement_list = check_to_requirement[check]
+                if not requirement_list in requirement_list_list and not has_unreachable_ability(requirement_list):
+                    requirement_list_list.append(requirement_list)
+            #If unable to proceed force placing the next ability
+            if not requirement_list_list:
+                place_next_key(Manager.game.ability_order[next_ability_index])
+                continue
+            chosen_requirement_list = random.choice(requirement_list_list)
+            #Choose requirement and key item
+            pick_next_key(chosen_requirement_list)
+        #Place last unecessary keys
+        elif key_items:
+            place_next_key(random.choice(key_items))
+        #Stop when all keys are placed and all doors are explored
+        else:
+            break
+
+def move_through_rooms():
+    #Move through each door
+    while True:
         for door in copy.deepcopy(current_available_doors):
             current_available_doors.remove(door)
             room = MapHelper.get_door_room(door)
             short_door = door.replace(room + "_", "")
-            for check, requirement in room_logic[room][short_door].items():
+            for check, requirement in Manager.constant["RoomLogic"][room][short_door].items():
                 #Convert check
                 try:
                     check = int(check)
@@ -163,41 +189,18 @@ def process_key_logic():
                 for door in special_check_to_door[special_check]:
                     room = MapHelper.get_door_room(door)
                     short_door = door.replace(room + "_", "")
-                    analyse_check(special_check, room_logic[room][short_door][special_check.replace(room + "_", "")])
+                    analyse_check(special_check, Manager.constant["RoomLogic"][room][short_door][special_check.replace(room + "_", "")])
                 del special_check_to_door[special_check]
-        #Keep going until stuck
-        if current_available_doors:
-            continue
-        #Place key item
-        if check_to_requirement:
-            #Weight checks
-            requirement_list_list = []
-            for check in check_to_requirement:
-                requirement_list = check_to_requirement[check]
-                if not requirement_list in requirement_list_list and not has_unreachable_ability(requirement_list):
-                    requirement_list_list.append(requirement_list)
-            #If unable to proceed force placing the next ability
-            if not requirement_list_list:
-                place_next_key(Manager.game.ability_order[next_ability_index])
-                reset_available_checks()
-                continue
-            chosen_requirement_list = random.choice(requirement_list_list)
-            #Choose requirement and key item
-            pick_next_key(chosen_requirement_list)
-            reset_available_checks()
-            #Check which obstacles were lifted
-            for check in list(check_to_requirement):
-                if not check in check_to_requirement:
-                    continue
-                requirement = check_to_requirement[check]
-                analyse_check(check, requirement)
-        #Place last unecessary keys
-        elif key_items:
-            place_next_key(random.choice(key_items))
-            reset_available_checks()
-        #Stop when all keys are placed and all doors are explored
-        else:
+        #Stop if no more doors are found
+        if not current_available_doors:
             break
+
+def check_lifted_obstacles():
+    for check in list(check_to_requirement):
+        if not check in check_to_requirement:
+            continue
+        requirement = check_to_requirement[check]
+        analyse_check(check, requirement)
 
 def reset_available_checks():
     previous_available_checks.clear()
@@ -223,7 +226,7 @@ def check_next_key(item):
         place_next_key(item)
 
 def analyse_check(check, requirement):
-    #If accessible try to remove it from requirement list no matter what
+    #If accessible remove it from the requirement list
     accessible = satisfies_requirement(requirement)
     if accessible:
         if check in check_to_requirement:
@@ -270,7 +273,6 @@ def add_requirement_to_check(check, requirement):
     check_to_requirement[check] = new_list
 
 def place_next_key(chosen_item):
-    global next_ability_index
     if random.random() < logic_complexity:
         try:
             chosen_check = pick_key_check(current_available_checks)
@@ -297,8 +299,14 @@ def place_next_key(chosen_item):
             raise CompletionError
     key_item_to_location[chosen_item] = chosen_check
     key_items.remove(chosen_item)
+    #Increment ability index
+    global next_ability_index
     if chosen_item in Manager.game.ability_order:
         next_ability_index += 1
+    #Analyse the game again
+    reset_available_checks()
+    check_lifted_obstacles()
+    move_through_rooms()
 
 def pick_key_check(available_checks):
     possible_checks = []
@@ -329,7 +337,7 @@ def split_item_profile(item):
         return (item_split[0], None)
     elif len(item_split) == 2:
         return (item_split[0], int(item_split[1]))
-    raise Exception("Item name invalid: " + item)
+    raise Exception(f"Item name invalid: {item}")
 
 def randomize_items():
     #Gather data
@@ -400,9 +408,7 @@ def randomize_items():
                 Manager.game_entities[instance].y_pos = Manager.game.instance_exception_to_position[instance][1] - Manager.game.grounded_item_to_offset_up[new_item]
             else:
                 floor_offset = Manager.game.instance_to_offset_up[instance]
-                direction = 1
-                if floor_offset != 0:
-                    direction = floor_offset/abs(floor_offset)
+                direction = floor_offset/abs(floor_offset) if floor_offset != 0 else 1
                 Manager.game_entities[instance].y_pos -= int(direction*Manager.game.grounded_item_to_offset_up[new_item] - floor_offset)
                 Manager.game_entities[instance].rotation = 90 - direction*90
         elif old_item in Manager.game.grounded_item_to_offset_up:
@@ -433,20 +439,16 @@ def randomize_enemies():
     #Apply
     for enemy in enemy_replacement:
         if enemy in Manager.game_objects:
-            if enemy_replacement[enemy] in Manager.game_objects:
-                Manager.transfer_object_code(enemy, enemy_replacement[enemy])
-            else:
-                Manager.transfer_object_code(enemy, enemy_replacement[enemy] + "l")
+            suffix = "" if enemy_replacement[enemy] in Manager.game_objects else "l"
+            Manager.transfer_object_code(enemy, enemy_replacement[enemy] + suffix)
             #Neutralize destroy code to avoid crashes
             if Manager.game == LunaNights and Manager.game_objects[enemy].events["Destroy"]:
                 Manager.game_objects[enemy].events["Destroy"][0].action = Manager.game_objects["NSenemy_0_02"].events["Destroy"][0].action
         else:
             #Adapt for left and right variants
             for direction in ["l", "r"]:
-                if enemy_replacement[enemy] in Manager.game_objects:
-                    Manager.transfer_object_code(enemy + direction, enemy_replacement[enemy])
-                else:
-                    Manager.transfer_object_code(enemy + direction, enemy_replacement[enemy] + direction)
+                suffix = "" if enemy_replacement[enemy] in Manager.game_objects else direction
+                Manager.transfer_object_code(enemy + direction, enemy_replacement[enemy] + suffix)
 
 def pick_and_remove(array):
     item = random.choice(array)
@@ -456,5 +458,18 @@ def pick_and_remove(array):
 def write_spoiler_log(seed):
     if not os.path.isdir("Spoiler"):
         os.makedirs("Spoiler")
-    with open("Spoiler\\" + Manager.game_name + " - " + str(seed) + ".json", "w") as file_writer:
-        file_writer.write(json.dumps(key_item_to_location, indent=2))
+    spoiler = {}
+    spoiler["Start"] = MapHelper.get_door_room(all_available_doors[0])
+    spoiler["Key"] = copy.deepcopy(key_item_to_location)
+    with open(f"Spoiler\\{Manager.game_name} - {seed}.json", "w") as file_writer:
+        file_writer.write(json.dumps(spoiler, indent=2))
+
+def write_save_info():
+    save_info_path = os.path.splitext(Manager.save_file_path)[0] + ".txt"
+    save_info = [
+        str(Manager.game_save["iSpawnPosX"]) + "\n",
+        str(Manager.game_save["iSpawnPosY"]) + "\n",
+        str(Manager.game_save["iSpawnStage"])+ "\n"
+    ]
+    with open(save_info_path, "w") as file_writer:
+        file_writer.writelines(save_info)

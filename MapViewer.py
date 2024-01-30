@@ -11,17 +11,13 @@ from enum import Enum
 TILEWIDTH = 15
 TILEHEIGHT = 10
 OUTLINE = 2
+
+debug = False
     
 def modify_color(color, hsv_mod):
     hue = (color.hueF() + hsv_mod[0]) % 1
-    if hsv_mod[1] < 1:
-        sat = color.saturationF() * hsv_mod[1]
-    else:
-        sat = color.saturationF() + (1 - color.saturationF())*(hsv_mod[1] - 1)
-    if hsv_mod[2] < 1:
-        val = color.valueF() * hsv_mod[2]
-    else:
-        val = color.valueF() + (1 - color.valueF())*(hsv_mod[2] - 1)
+    sat = color.saturationF() * hsv_mod[1] if hsv_mod[1] < 1 else color.saturationF() + (1 - color.saturationF())*(hsv_mod[1] - 1)
+    val = color.valueF() * hsv_mod[2]      if hsv_mod[2] < 1 else color.valueF() + (1 - color.valueF())*(hsv_mod[2] - 1)
     return QColor.fromHsvF(hue, sat, val)
     
 def modify_pixmap_color(pixmap, hsv_mod):
@@ -90,7 +86,8 @@ class MainWindow(QMainWindow):
     def __init__(self, seed, spoiler):
         super().__init__()
         self.seed = seed
-        self.spoiler = spoiler
+        self.player_start = spoiler["Start"]
+        self.key_location = spoiler["Key"]
         self.init()
     
     def init(self):
@@ -164,10 +161,8 @@ class MainWindow(QMainWindow):
     
     def key_drop_down_change(self, index):
         for room in self.room_list:
-            if room.room_data.name == MapHelper.check_to_room[self.spoiler[list(self.spoiler)[index]]]:
-                room.set_theme(RoomTheme.Default)
-            else:
-                room.set_theme(RoomTheme.Dark)
+            key_room = MapHelper.check_to_room[self.key_location[list(self.key_location)[index]]]
+            room.set_theme(RoomTheme.Default if room.room_data.name == key_room else RoomTheme.Dark)
     
     def get_room_by_name(self, name):
         return self.room_list[list(Manager.constant["RoomLayout"]).index(name)]
@@ -187,7 +182,7 @@ class MainWindow(QMainWindow):
             self.room_list.append(new_room)
             self.add_room_items(new_room)
         
-        for item in self.spoiler:
+        for item in self.key_location:
             self.key_drop_down.addItem(Manager.constant["ItemInfo"][item]["Name"])
     
     def fill_visuals(self):
@@ -199,16 +194,19 @@ class MainWindow(QMainWindow):
                 theme_to_visuals[theme]["Fill"].append(modify_color(QColor(color), theme_to_mod[theme]))
         for theme in theme_to_visuals:
             theme_to_visuals[theme]["Outline"] = modify_color(QColor("#ffffff"), theme_to_mod[theme])
-        for file in os.listdir("Data\\" + Manager.game_name + "\\MapIcon"):
-            name, extension = os.path.splitext(file)
+        for file in os.listdir(f"Data\\{Manager.game_name}\\MapIcon"):
+            file_name = os.path.splitext(file)[0]
             for theme in theme_to_visuals:
-                theme_to_visuals[theme]["Icon"][name] = modify_pixmap_color(QPixmap("Data\\" + Manager.game_name + "\\MapIcon\\" + file), theme_to_mod[theme])
+                theme_to_visuals[theme]["Icon"][file_name] = modify_pixmap_color(QPixmap(f"Data\\{Manager.game_name}\\MapIcon\\{file}"), theme_to_mod[theme])
             
     def add_room_items(self, room):
         
         #Icons
+        if room.room_data.name == self.player_start:
+            room.room_data.icon = "start"
         if room.room_data.icon:
             icon = self.scene.addPixmap(QPixmap(""))
+            icon.setVisible(not debug)
             icon.setTransform(QTransform.fromScale(1, -1))
             icon.setPos(room.room_data.width*TILEWIDTH/2 - 6, room.room_data.height*TILEHEIGHT/2 + TILEHEIGHT/2 - 1)
             icon.setParentItem(room)
@@ -235,7 +233,7 @@ class MainWindow(QMainWindow):
         
         #Text
         text = self.scene.addText(room.room_data.name.split("_")[-1], "Impact")
-        text.setVisible(False)
+        text.setVisible(debug)
         text.setTransform(QTransform.fromScale(0.5, -0.5))
         text.setPos(room.room_data.width*TILEWIDTH/2 - text.document().size().width()/4.25, room.room_data.height*TILEHEIGHT/2 + TILEHEIGHT*2/3)
         text.setParentItem(room)

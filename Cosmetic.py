@@ -4,11 +4,14 @@ import WonderLab
 
 import random
 import copy
+import math
 import os
 import re
 import colorsys
+
 from PIL import Image
 from enum import Enum
+from pydub import AudioSegment
 
 class ShiftType(Enum):
     Simple = 1
@@ -32,17 +35,37 @@ def init():
     texture_padding = 2
 
 def randomize_background_music(game_path):
-    for group in Manager.constant["MusicGroup"]:
-        new_list = copy.deepcopy(group)
+    #Gather data
+    type_to_music = {}
+    for track in Manager.constant["MusicInfo"]:
+        type = Manager.constant["MusicInfo"][track]["Type"]
+        if not type in type_to_music:
+            type_to_music[type] = []
+        type_to_music[type].append(track)
+    #Shuffle music tracks
+    for type in type_to_music:
+        old_list = type_to_music[type]
+        new_list = copy.deepcopy(old_list)
         random.shuffle(new_list)
-        new_dict = dict(zip(group, new_list))
+        new_dict = dict(zip(old_list, new_list))
         music_replacement.update(new_dict)
     for item in music_replacement:
-        os.rename(game_path + "\\data\\" + music_replacement[item] + ".ogg", game_path + "\\data\\" + item + ".bak")
+        os.rename(f"{game_path}\\data\\{music_replacement[item]}.ogg", f"{game_path}\\data\\{item}.bak")
+    #Rename or fix music volume when necessary
     for item in music_replacement:
-        os.rename(game_path + "\\data\\" + item + ".bak", game_path + "\\data\\" + item + ".ogg")
+        old_music = item
+        new_music = music_replacement[item]
+        modifier = Manager.constant["MusicInfo"][new_music]["Modifier"] / Manager.constant["MusicInfo"][old_music]["Modifier"]
+        if modifier == 1.0:
+            os.rename(f"{game_path}\\data\\{old_music}.bak", f"{game_path}\\data\\{old_music}.ogg")
+            continue
+        audio = AudioSegment.from_ogg(f"{game_path}\\data\\{old_music}.bak")
+        audio += 10 * math.log(modifier**2, 10)
+        audio.export(f"{game_path}\\data\\{old_music}.ogg", format="ogg")
+        os.remove(f"{game_path}\\data\\{old_music}.bak")
 
 def update_music_names():
+    #Luna Nights music tags
     for item in music_replacement:
         if is_text_entry(item):
             music_to_name[item] = get_text_entry(item)
@@ -79,13 +102,13 @@ def import_texture(page_item_index):
     texture_id    = page_item.texture_id
     #Load images
     old_image, old_pixels = load_game_texture(texture_id)
-    new_image  = Image.open("Data\\" + Manager.game_name + "\\Texture\\" + str(page_item_index) + ".png")
+    new_image  = Image.open(f"Data\\{Manager.game_name}\\Texture\\{page_item_index}.png")
     if new_image.size != (source_size_x, source_size_y):
-        raise Exception("Texture size mismatches page item: " + str(page_item_index))
+        raise Exception(f"Texture size mismatches page item: {page_item_index}")
     new_pixels = new_image.load()
     #Target specific region
-    for x in range(source_pos_x - texture_padding, source_pos_x + source_size_x + texture_padding):
-        for y in range(source_pos_y - texture_padding, source_pos_y + source_size_y + texture_padding):
+    for x in range(max(0, source_pos_x - texture_padding), min(source_pos_x + source_size_x + texture_padding, old_image.width)):
+        for y in range(max(0, source_pos_y - texture_padding), min(source_pos_y + source_size_y + texture_padding, old_image.height)):
             new_x = min(max(x - source_pos_x, 0), source_size_x - 1)
             new_y = min(max(y - source_pos_y, 0), source_size_y - 1)
             old_pixels[x, y] = new_pixels[new_x, new_y]
@@ -103,14 +126,9 @@ def apply_scheme_to_page_item(page_item_index, color_scheme, blacklist):
         return
     image, pixels = load_game_texture(texture_id)
     #Target specific region
-    for x in range(source_pos_x - texture_padding, source_pos_x + source_size_x + texture_padding):
-        for y in range(source_pos_y - texture_padding, source_pos_y + source_size_y + texture_padding):
-            #Check padding
-            try:
-                pixels[x, y]
-            except IndexError:
-                continue
-            #Check opcaity
+    for x in range(max(0, source_pos_x - texture_padding), min(source_pos_x + source_size_x + texture_padding, image.width)):
+        for y in range(max(0, source_pos_y - texture_padding), min(source_pos_y + source_size_y + texture_padding, image.height)):
+            #Check opacity
             if pixels[x, y][3] == 0:
                 continue
             #Check tile blacklist
@@ -136,13 +154,13 @@ def apply_scheme_to_page_item(page_item_index, color_scheme, blacklist):
 
 def load_game_texture(texture_id):
     if not texture_id in texture_to_image:
-        image = Image.open("Game\\Export\\" + str(texture_id) + ".png")
+        image = Image.open(f"Game\\Export\\{texture_id}.png")
         texture_to_image[texture_id] = (image, image.load())
     return texture_to_image[texture_id]
 
 def save_game_textures():
     for texture_id in texture_to_image:
-        texture_to_image[texture_id][0].save("Game\\Export\\" + str(texture_id) + ".png")
+        texture_to_image[texture_id][0].save(f"Game\\Export\\{texture_id}.png")
     texture_to_image.clear()
 
 def rgb_to_hex(rgb):
@@ -198,8 +216,8 @@ def randomize_dialogues():
         sentence = generate_sentence()
         if len(sentence) <= 5 and random.random() <= 0.25:
             sentence.extend(generate_sentence())
-        for num in range(len(sentence)//7):
-            sentence.insert((num + 1)*7 - 1, "*")
+        for num in range(len(sentence)//8):
+            sentence.insert((num + 1)*8 - 1, "*")
         sentence = " ".join(sentence)
         sentence = sentence.replace(" * ", "*")
         dialogue_lines.append(sentence)

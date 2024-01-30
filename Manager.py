@@ -4,9 +4,11 @@ import WonderLab
 import json
 import os
 import re
+import glob
 import string
 import shutil
 import struct
+import base64
 
 class Object:
     def __init__(self, sprite, visible, solid, unknown, persistent, parent, texture_mask_id, uses_physics, is_sensor, collision_shape, events):
@@ -108,6 +110,12 @@ def init(module):
     game_text = []
     global game_audio
     game_audio = []
+    global game_save
+    game_save = {}
+    global game_save_backup
+    game_save_backup = {}
+    global save_signature
+    save_signature = "Ladybug Randomizer"
     global event_types
     event_types = [
         "Create",
@@ -132,15 +140,19 @@ def init(module):
 def load_constant():
     global constant
     constant = {}
-    for file in os.listdir("Data\\" + game_name + "\\Constant"):
-        name, extension = os.path.splitext(file)
-        with open("Data\\" + game_name + "\\Constant\\" + file, "r", encoding="utf8") as file_reader:
-            constant[name] = json.load(file_reader)
+    for file in os.listdir(f"Data\\{game_name}\\Constant"):
+        file_name = os.path.splitext(file)[0]
+        with open(f"Data\\{game_name}\\Constant\\" + file, "r", encoding="utf8") as file_reader:
+            constant[file_name] = json.load(file_reader)
+    with open(f"Data\\{game_name}\\Save\\Save.txt", "r", encoding="utf8") as file_reader:
+        constant["SaveInfo"] = file_reader.readlines()
 
 def unpack_game_data(game_path):
+    #Create the game directory
     if not os.path.isdir("Game"):
         os.makedirs("Game")
-    with open(game_path + "\\data.win", "rb") as file_reader:
+    #Unpack data.win
+    with open(f"{game_path}\\data.win", "rb") as file_reader:
         file_reader.seek(0, os.SEEK_END)
         data_size = file_reader.tell()
         current_offset = 8
@@ -148,29 +160,33 @@ def unpack_game_data(game_path):
             file_reader.seek(current_offset)
             chunk_name = file_reader.read(4).decode("utf-8")
             chunk_size = int.from_bytes(file_reader.read(4), "little") + 8
-            with open("Game\\" + chunk_name, "wb") as file_writer:
+            with open(f"Game\\{chunk_name}", "wb") as file_writer:
                 file_reader.seek(current_offset)
                 file_writer.write(file_reader.read(chunk_size))
             chunk_to_offset[chunk_name] = current_offset
             current_offset += chunk_size
     unpack_textures()
-    with open(game_path + "\\data\\dial_e.txt", "r", encoding="utf8") as file_reader:
+    #Read game text
+    with open(f"{game_path}\\data\\dial_e.txt", "r", encoding="utf8") as file_reader:
         game_text.extend(file_reader.readlines())
 
 def repack_game_data(game_path):
+    #Repack data.win
     repack_textures()
-    with open(game_path + "\\data.win", "r+b") as file_writer:
+    with open(f"{game_path}\\data.win", "r+b") as file_writer:
         file_writer.truncate(8)
         file_writer.seek(8)
         for chunk in chunk_to_offset:
-            with open("Game\\" + chunk, "rb") as file_reader:
+            with open(f"Game\\{chunk}", "rb") as file_reader:
                 file_writer.write(file_reader.read())
         file_writer.seek(0, os.SEEK_END)
         data_size = file_writer.tell()
         file_writer.seek(4)
         file_writer.write((data_size - 8).to_bytes(4, "little"))
+    #Remove the game directory
     shutil.rmtree("Game")
-    with open(game_path + "\\data\\dial_e.txt", "w", encoding="utf8") as file_writer:
+    #Write text changes
+    with open(f"{game_path}\\data\\dial_e.txt", "w", encoding="utf8") as file_writer:
         file_writer.writelines(game_text)
 
 def unpack_textures():
@@ -186,7 +202,7 @@ def unpack_textures():
             file_reader.seek(texture_info_offset + 8)
             texture_offset = int.from_bytes(file_reader.read(4), "little") - chunk_to_offset["TXTR"]
             #Export texture data
-            with open("Game\\export\\" + str(index) + ".png", "wb") as file_writer:
+            with open(f"Game\\export\\{index}.png", "wb") as file_writer:
                 file_reader.seek(texture_offset)
                 texture_size = file_reader.read().find((0x49454E44AE426082).to_bytes(8, "big")) + 8
                 file_reader.seek(texture_offset)
@@ -213,7 +229,7 @@ def repack_textures():
             file_writer.write((texture_offset + chunk_to_offset["TXTR"]).to_bytes(4, "little"))
             #Append texture data
             file_writer.seek(texture_offset)
-            with open("Game\\export\\" + str(index) + ".png", "rb") as file_reader:
+            with open(f"Game\\export\\{index}.png", "rb") as file_reader:
                 file_writer.write(file_reader.read())
             #Fill remaining space
             remainder = file_writer.tell()%0x10
@@ -235,6 +251,64 @@ def repack_textures():
             sound_offset = int.from_bytes(file_writer.read(4), "little")
             file_writer.seek(12 + index*4)
             file_writer.write((sound_offset + (new_size - old_size)).to_bytes(4, "little"))
+
+def unpack_save_data():
+    with open(f"Data\\{game_name}\\Save\\Save.sav", "r", encoding="utf8") as file_reader:
+        save_data = file_reader.readlines()
+    read_save_data(save_data)
+
+def repack_save_data():
+    #Don't repack if no changes were made
+    if game_save == game_save_backup:
+        return
+    #Add a signature to the new save
+    game_save["sFileName"] = save_signature
+    #Open save data
+    with open(f"Data\\{game_name}\\Save\\Save.sav", "r", encoding="utf8") as file_reader:
+        save_data = file_reader.readlines()
+    write_save_data(save_data)
+    #Write the file in the proper location
+    with open(save_file_path, "w", encoding="utf8") as file_writer:
+        file_writer.writelines(save_data)
+
+def read_save_data(save_data):
+    for line_index in range(len(constant["SaveInfo"])):
+        entry = constant["SaveInfo"][line_index].strip()
+        if not entry:
+            continue
+        data_type = entry[0]
+        value = save_data[line_index].strip()
+        value = base64_to_string(value)
+        if data_type.isupper():
+            value = value.split(",")
+            if value:
+                value.pop()
+            for index in range(len(value)):
+                value[index] = read_save_value(data_type, line_index, value[index])
+        else:
+            value = read_save_value(data_type, line_index, value)
+        game_save[entry] = value
+        game_save_backup[entry] = value
+
+def write_save_data(save_data):
+    for line_index in range(len(constant["SaveInfo"])):
+        entry = constant["SaveInfo"][line_index].strip()
+        if not entry:
+            continue
+        data_type = entry[0]
+        value = game_save[entry]
+        if data_type.isupper():
+            for index in range(len(value)):
+                value[index] = write_save_value(data_type, line_index, value[index])
+            value = ",".join(value)
+            if value:
+                value += ","
+            else:
+                value = "0" if game == LunaNights else "undefined"
+        else:
+            value = write_save_value(data_type, line_index, value)
+        value = string_to_base64(value)
+        save_data[line_index] = value + "\n"
 
 def read_game_data():
     #String data
@@ -338,10 +412,7 @@ def read_game_data():
             name            = game_strings[int.from_bytes(file_reader.read(4), "little")]
             sprite          = int.from_bytes(file_reader.read(4), "little")
             sprite          = -(sprite & 0x80000000) | (sprite & 0x7FFFFFFF)
-            if sprite < 0:
-                sprite = None
-            else:
-                sprite = list(game_sprites)[sprite]
+            sprite          = None if sprite < 0 else list(game_sprites)[sprite]
             visible         = bool(int.from_bytes(file_reader.read(4), "little"))
             solid           = bool(int.from_bytes(file_reader.read(4), "little"))
             unknown         = bool(int.from_bytes(file_reader.read(4), "little"))
@@ -508,10 +579,7 @@ def write_game_data():
             file_writer.seek(object_offset)
             name = game_strings[int.from_bytes(file_writer.read(4), "little")]
             sprite = game_objects[name].sprite
-            if sprite in game_sprites:
-                sprite = list(game_sprites).index(sprite)
-            else:
-                sprite = -1
+            sprite = list(game_sprites).index(sprite) if sprite in game_sprites else -1
             file_writer.write((sprite & 0xFFFFFFFF).to_bytes(4, "little"))
             file_writer.write(int(game_objects[name].visible).to_bytes(4, "little"))
             file_writer.write(int(game_objects[name].solid).to_bytes(4, "little"))
@@ -597,8 +665,44 @@ def write_game_data():
 
 def get_page_item_by_index(index):
     if not type(index) is int:
-        raise Exception("Page item index invalid: " + index)
+        raise Exception(f"Page item index invalid: {index}")
     return game_page_items[list(game_page_items)[index]]
+
+def get_save_file_path():
+    global save_file_path
+    appdata = os.getenv("LOCALAPPDATA")
+    folder = game.save_directory
+    used_index = []
+    for file_path in glob.glob(os.path.join(appdata, folder, "*.sav")):
+        file_name = os.path.split(os.path.splitext(file_path)[0])[-1]
+        used_index.append(int(file_name[-1]))
+    used_index.sort()
+    save_index = None
+    for index in range(3):
+        if not index in used_index:
+            save_index = index
+            break
+    if not save_index:
+        raise Exception("No free save data slots found, please delete at least one of your in-game save files")
+    save_name = f"game{save_index}.sav"
+    save_file_path = os.path.join(appdata, folder, save_name)
+    
+def get_save_info_list():
+    appdata = os.getenv("LOCALAPPDATA")
+    folder = game.save_directory
+    return glob.glob(os.path.join(appdata, folder, "*.txt"))
+    
+def get_save_file_list():
+    save_file_list = []
+    appdata = os.getenv("LOCALAPPDATA")
+    folder = game.save_directory
+    for file_path in glob.glob(os.path.join(appdata, folder, "*.sav")):
+        with open(file_path, "r", encoding="utf8") as file_reader:
+            save_data = file_reader.readlines()
+        encoded_signature = string_to_base64(save_signature)
+        if encoded_signature + "\n" in save_data:
+            save_file_list.append(file_path)
+    return save_file_list
 
 def remove_entity(instance):
     game_entities[instance].x_pos = 0
@@ -615,23 +719,23 @@ def transfer_object_code(recipient, giver):
                     subevent.action = subevent_backup.action
 
 def convert_tilemaps_to_patches():
-    for folder in os.listdir("Data\\" + game_name + "\\TileMap"):
-        if os.path.isdir("Data\\" + game_name + "\\TileMap\\" + folder):
-            with open("Data\\" + game_name + "\\TileMap\\" + folder + ".tmp", "wb") as file_writer:
-                for file in os.listdir("Data\\" + game_name + "\\TileMap\\" + folder):
-                    name, extension = os.path.splitext(file)
-                    with open("Data\\" + game_name + "\\TileMap\\" + folder + "\\" + file) as file_reader:
+    for folder in os.listdir(f"Data\\{game_name}\\TileMap"):
+        if os.path.isdir(f"Data\\{game_name}\\TileMap\\{folder}"):
+            with open(f"Data\\{game_name}\\TileMap\\{folder}.tmp", "wb") as file_writer:
+                for file in os.listdir(f"Data\\{game_name}\\TileMap\\{folder}"):
+                    file_name = os.path.splitext(file)[0]
+                    with open(f"Data\\{game_name}\\TileMap\\{folder}\\{file}") as file_reader:
                         new_tile_data = file_reader.read().strip().replace("\n", ",").split(",")
                     new_tile_data = [int(tile_id) for tile_id in new_tile_data]
-                    old_tile_data = game_tilemaps[name].tile_data
+                    old_tile_data = game_tilemaps[file_name].tile_data
                     for tile_index in range(len(old_tile_data)):
                         if old_tile_data[tile_index] != new_tile_data[tile_index]:
-                            file_writer.write(list(game_tilemaps).index(name).to_bytes(4, "little"))
+                            file_writer.write(list(game_tilemaps).index(file_name).to_bytes(4, "little"))
                             file_writer.write(tile_index.to_bytes(4, "little"))
                             file_writer.write(new_tile_data[tile_index].to_bytes(4, "little"))
 
 def apply_tilemap_patch(patch):
-    with open("Data\\" + game_name + "\\TileMap\\" + patch + ".tmp", "rb") as file_reader:
+    with open(f"Data\\{game_name}\\TileMap\\{patch}.tmp", "rb") as file_reader:
         file_reader.seek(0, os.SEEK_END)
         data_size = file_reader.tell()
         current_offset = 0
@@ -654,3 +758,39 @@ def replace_tile_id(tilemap, coordinates, new_id):
     y_pos -= 1
     tile_index = x_pos + y_pos*game_tilemaps[tilemap].size_x
     game_tilemaps[tilemap].tile_data[tile_index] = new_id
+
+def read_save_value(data_type, line_index, value):
+    match data_type.lower():
+        case 'l':
+            return int(value) == line_index
+        case 'b':
+            return bool(int(value)) if value.isdigit() else True
+        case 'i':
+            return int(value)
+        case 'f':
+            return float(value)
+        case 's':
+            return value
+        case _:
+            raise Exception("Unknown data type")
+
+def write_save_value(data_type, line_index, value):
+    match data_type.lower():
+        case 'l':
+            return str(line_index) if value else "0"
+        case 'b':
+            return str(int(value))
+        case 'i':
+            return str(value)
+        case 'f':
+            return str(value)
+        case 's':
+            return value
+        case _:
+            raise Exception("Unknown data type")
+
+def base64_to_string(base_64):
+    return base64.b64decode(base_64).decode("utf-8")
+
+def string_to_base64(string):
+    return base64.b64encode(string.encode("utf-8")).decode("utf-8")
