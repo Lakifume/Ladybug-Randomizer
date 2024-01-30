@@ -1,9 +1,11 @@
 # Ladybug-Randomizer
 A randomizer for Touhou Luna Nights and Deedlit in Wonder Labyrinth, the two metroidvania games made by Team Ladybug
 
-![Screenshot (736)](https://github.com/Lakifume/Ladybug-Randomizer/assets/56451477/2d66d7dc-9ba5-465a-aa84-034c661711be)
+![Screenshot (754)](https://github.com/Lakifume/Ladybug-Randomizer/assets/56451477/f0bd7e80-4215-47c9-93d3-5b70f0f7ea52)
 
 ![Screenshot (711)](https://github.com/Lakifume/Ladybug-Randomizer/assets/56451477/7c681014-ad59-4c08-8ead-eaf25f60d4e4)
+
+![Screenshot (757)](https://github.com/Lakifume/Ladybug-Randomizer/assets/56451477/d0f4459f-1c98-4723-88e0-e4a6a8bd37ae)
 
 ## Item Randomization
 
@@ -25,10 +27,22 @@ Randomize the hue of many types of in-game sprites. This edits the texture asset
 
 Randomize the conversation lines that characters can say during events and cutscenes. This can also restructure sentences at random similarily to the dialogue rando implemented in DSVrando.
 
-## Speedrun Logic
+## Reverse Rando
 
-Toggle a more advanced item logic that may require in-depth knowledge of the game's tricks as well as taking more risks to reach an item. This feature is still experimental until further testing.
+Start the game from the top of the map and make your way down to find the items required to reach the end. Using the item tracker's warp to start feature may be required to beat the game in that mode.
+
+## Require All Keys
+
+Block off the final boss with all colored doors/gates, forcing you to collect all colored keys/switches to finish the rando.
+
+## Stage 6 Unlocked
+
+Unlock Luna Night's extra stage from the start of the game without having to reach Flandre beforehand, also affecting the logic.
 
 ## Skip Boss Rush
 
-Open up a path that allows you to bypass the final boss rush in Wonder Labyrinth, simplifying relatively quick seeds.
+Remove the endgame boss rush in Wonder Labyrinth's last stage, simplifying relatively quick seeds.
+
+## Speedrun Logic
+
+Toggle a more advanced item logic that may require in-depth knowledge of the game's tricks as well as taking more risks to reach an item.
