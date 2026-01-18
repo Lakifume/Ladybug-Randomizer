@@ -12,8 +12,6 @@ class CompletionError(Exception):
     pass
 
 def init():
-    global previous_available_checks
-    previous_available_checks = []
     global current_available_doors
     current_available_doors = ["Stage_00_00_Start"]
     global current_available_checks
@@ -135,6 +133,7 @@ def check_unreachable_ability(requirement):
     return False
 
 def process_key_logic():
+    reset_available_checks()
     move_through_rooms()
     while True:
         #Place key item
@@ -203,15 +202,14 @@ def check_lifted_obstacles():
         analyse_check(check, requirement)
 
 def reset_available_checks():
-    previous_available_checks.clear()
-    previous_available_checks.extend(current_available_checks)
-    current_available_checks.clear()
+    current_available_checks.insert(0, [])
 
 def pick_next_key(requirement):
     chosen_requirement = random.choice(requirement)
     while has_unreachable_ability([chosen_requirement]):
         chosen_requirement = random.choice(requirement)
     if type(chosen_requirement) is list:
+        random.shuffle(chosen_requirement)
         for req in chosen_requirement:
             check_next_key(req)
     else:
@@ -250,7 +248,7 @@ def analyse_check(check, requirement):
                 if destination in check_to_requirement:
                     del check_to_requirement[destination]
         else:
-            current_available_checks.append(check)
+            current_available_checks[0].append(check)
             all_available_checks.append(check)
     #Add to requirement list
     else:
@@ -273,26 +271,15 @@ def add_requirement_to_check(check, requirement):
     check_to_requirement[check] = new_list
 
 def place_next_key(chosen_item):
-    if random.random() < logic_complexity:
-        try:
-            chosen_check = pick_key_check(current_available_checks)
-        except IndexError:
+    chosen_check = None
+    for history in current_available_checks:
+        if random.random() < logic_complexity:
             try:
-                chosen_check = pick_key_check(previous_available_checks)
+                chosen_check = pick_key_check(history)
+                break
             except IndexError:
-                try:
-                    chosen_check = pick_key_check(all_available_checks)
-                except IndexError:
-                    raise CompletionError
-    elif random.random() < logic_complexity:
-        try:
-            chosen_check = pick_key_check(previous_available_checks)
-        except IndexError:
-            try:
-                chosen_check = pick_key_check(all_available_checks)
-            except IndexError:
-                raise CompletionError
-    else:
+                pass
+    if not chosen_check:
         try:
             chosen_check = pick_key_check(all_available_checks)
         except IndexError:

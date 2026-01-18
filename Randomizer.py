@@ -519,23 +519,6 @@ class MainWindow(QWidget):
         self.radio_button_2.toggled.connect(self.radio_button_group_1_checked)
         box_4_grid.addWidget(self.radio_button_2, 1, 0)
         
-        #Seed
-        
-        self.seed_layout = QGridLayout()
-        
-        self.seed_field = QLineEdit(config.get("Misc", "sSeed"))
-        self.seed_field.setMaxLength(30)
-        self.seed_field.textChanged[str].connect(self.new_seed)
-        self.seed_layout.addWidget(self.seed_field, 0, 0, 1, 2)
-        
-        seed_button_1 = QPushButton("New Seed")
-        seed_button_1.clicked.connect(self.seed_button_1_clicked)
-        self.seed_layout.addWidget(seed_button_1, 1, 0, 1, 1)
-        
-        seed_button_2 = QPushButton("Confirm")
-        seed_button_2.clicked.connect(self.seed_button_2_clicked)
-        self.seed_layout.addWidget(seed_button_2, 1, 1, 1, 1)
-        
         #Init checkboxes
         
         self.check_box_1.setChecked(config.getboolean("Gameplay", "bKeyItems"))
@@ -781,6 +764,22 @@ class MainWindow(QWidget):
         self.palette.setBrush(QPalette.Window, background)
         self.setPalette(self.palette)
     
+    def create_seed_layout(self):
+        self.seed_layout = QGridLayout()
+        
+        self.seed_field = QLineEdit(config.get("Misc", "sSeed"))
+        self.seed_field.setMaxLength(30)
+        self.seed_field.textChanged[str].connect(self.new_seed)
+        self.seed_layout.addWidget(self.seed_field, 0, 0, 1, 2)
+        
+        seed_button_1 = QPushButton("New Seed")
+        seed_button_1.clicked.connect(self.seed_button_1_clicked)
+        self.seed_layout.addWidget(seed_button_1, 1, 0, 1, 1)
+        
+        seed_button_2 = QPushButton("Confirm")
+        seed_button_2.clicked.connect(self.seed_button_2_clicked)
+        self.seed_layout.addWidget(seed_button_2, 1, 1, 1, 1)
+    
     def fix_background_glitch(self):
         try:
             self.box_1.setStyleSheet("")
@@ -836,6 +835,7 @@ class MainWindow(QWidget):
             return
         
         #Seed prompt
+        self.create_seed_layout()
         self.seed = None
         self.seed_box = QDialog(self)
         self.seed_box.setLayout(self.seed_layout)

@@ -213,12 +213,19 @@ def set_reverse_start():
     #Disable some flags
     Manager.game_save["bNitoriShipIntroFlag"] = True
     Manager.game_save["bAkyuuIntroFlag"]      = True
+    Manager.game_save["bNitoriIntroFlag"]     = True
+    Manager.game_save["bShopTutorialFlag"]    = True
     Manager.game_save["bStage1FirstLoadFlag"] = True
     Manager.game_save["bStage2FirstLoadFlag"] = True
     Manager.game_save["bStage3FirstLoadFlag"] = True
     Manager.game_save["bStage4FirstLoadFlag"] = True
     Manager.game_save["bStage5FirstLoadFlag"] = True
     Manager.game_save["bStage6FirstLoadFlag"] = True
+    #Add Nitori's item in front of the shop
+    Manager.game_entities[100028].x_pos = 4256
+    Manager.game_entities[100028].y_pos = 1024
+    Manager.game_entities[100028].type = "NSitem_0_70"
+    Manager.game_entities[100028].creation_code = -1
     #Allow going from the save back up to Remilia
     Manager.apply_tilemap_patch("SavePointToRemilia")
     #Allow going from the chainsaw check to Marisa

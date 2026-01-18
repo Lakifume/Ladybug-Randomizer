@@ -766,7 +766,7 @@ def read_save_value(data_type, line_index, value):
         case 'b':
             return bool(int(value)) if value.isdigit() else True
         case 'i':
-            return int(value)
+            return int(value) if value.isdigit() else value
         case 'f':
             return float(value)
         case 's':

@@ -1,0 +1,1 @@
+pyinstaller.exe --onefile --add-data "ffmpeg.exe;." --add-data "ffprobe.exe;." --icon=Bug.ico Randomizer.py
