@@ -1,0 +1,295 @@
+{
+  "Stage_00_03": {
+    "0_0_Left": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_0_Right": {
+      "0_0_Left": ["NSitem_0_90", "Flight"],
+      "0_1_Left": ["NSitem_0_90", "Flight"],
+      "0_1_Right": ["NSitem_0_90", "Flight"],
+      "0_2_Left": ["NSitem_0_90", "Flight"],
+      "0_2_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_1_Left": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_1_Right": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_2_Left": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_2_Right": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    }
+  },
+  "Stage_00_08": {
+    "0_0_Left": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_0_Right": {
+      "0_0_Left": ["NSitem_0_90", "Flight"],
+      "0_1_Left": ["NSitem_0_90", "Flight"],
+      "0_1_Right": ["NSitem_0_90", "Flight"],
+      "0_2_Right": [["NSitem_0_81", "NSitem_0_90"], "Flight"]
+    },
+    "0_1_Left": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_1_Right": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "0_2_Right": {
+      "0_0_Right": ["NSitem_0_90", "Flight"]
+    }
+  },
+  "Stage_00_12": {
+    "1_0_Right": {
+      "0_0_Left": []
+    }
+  },
+  "Stage_00_20": {
+    "0_0_Right": {
+	  "100192": []
+	}
+  },
+  "Stage_00_29": {
+    "0_0_Left": {
+      "1_0_Right": [["NSitem_0_80", "NSitem_0_83"], "Flight"]
+    },
+    "1_0_Right": {
+      "0_0_Left": [["NSitem_0_80", "NSitem_0_83"], "Flight"]
+    }
+  },
+  "Stage_01_03": {
+    "0_0_Left": {
+      "100287": ["Height"]
+    },
+    "1_0_Right": {
+      "100287": ["Height"]
+    },
+    "0_1_Left": {
+      "100287": ["Height"]
+    },
+    "1_1_Right": {
+      "100287": ["Height"]
+    }
+  },
+  "Stage_01_21": {
+    "0_0_Left": {
+      "0_2_Right": [["NSitem_0_81", "NSitem_0_93"], "Flight"]
+    },
+    "0_0_Right": {
+      "0_2_Right": [["NSitem_0_81", "NSitem_0_93"], "Flight"]
+    },
+    "0_1_Right": {
+      "0_2_Right": [["NSitem_0_81", "NSitem_0_93"], "Flight"]
+    },
+    "0_2_Right": {
+      "0_0_Left": ["NSitem_0_93", "Flight"],
+      "0_0_Right": ["NSitem_0_93", "Flight"],
+      "0_1_Right": ["NSitem_0_93", "Flight"]
+    }
+  },
+  "Stage_02_00": {
+    "0_0_Right": {
+      "0_2_Left": [["NSitem_0_81", "NSitem_0_91"], "Flight"]
+    },
+    "0_2_Left": {
+      "0_0_Right": ["NSitem_0_91", "Flight"]
+    }
+  },
+  "Stage_02_06": {
+    "0_3_Right": {
+      "0_0_Right": []
+    }
+  },
+  "Stage_02_07": {
+    "0_0_Right": {
+      "0_2_Left": ["Height"],
+      "0_3_Left": ["Height"]
+    },
+    "0_2_Left": {
+      "0_0_Right": [],
+      "0_3_Left": ["Height"]
+    },
+    "0_3_Left": {
+      "0_0_Right": []
+    }
+  },
+  "Stage_02_10": {
+    "0_0_Left": {
+      "0_1_Left": ["Height"]
+    }
+  },
+  "Stage_02_12": {
+    "0_0_Left": {
+      "0_0_Right": ["NSitem_0_93", "Flight"],
+      "0_1_Right": [],
+      "0_2_Right": ["Height"]
+    },
+    "0_0_Right": {
+      "0_0_Left": ["NSitem_0_93", "Flight"],
+      "0_1_Right": ["NSitem_0_93", "Flight"],
+      "0_2_Right": [["NSitem_0_81", "NSitem_0_93"], "Flight"]
+    },
+    "0_1_Right": {
+      "0_0_Right": ["NSitem_0_93", "Flight"],
+      "0_2_Right": ["Height"]
+    },
+    "0_2_Right": {
+      "0_0_Right": ["NSitem_0_93", "Flight"]
+    }
+  },
+  "Stage_02_21": {
+    "0_0_Left": {
+      "1_0_Right": []
+    },
+    "1_0_Right": {
+      "0_0_Left": []
+    }
+  },
+  "Stage_02_22": {
+    "0_0_Right": {
+      "0_1_Right": ["Height"],
+      "0_2_Left": ["Height"],
+      "0_2_Right": ["Height"]
+    },
+    "0_1_Right": {
+      "0_2_Left": ["Height"],
+      "0_2_Right": ["Height"]
+    }
+  },
+  "Stage_02_23": {
+    "0_0_Left": {
+      "2_0_Right": ["NSitem_0_70.-1", "NSitem_0_81"]
+    }
+  },
+  "Stage_03_00": {
+    "0_0_Left": {
+      "2_0_Right": ["NSitem_0_92", "Flight"]
+    },
+    "2_0_Right": {
+      "0_0_Left": ["NSitem_0_92", "Flight"]
+    }
+  },
+  "Stage_03_04": {
+    "0_0_Right": {
+      "0_1_Left": ["NSitem_0_70.-1", "NSitem_0_80"]
+    },
+    "0_1_Left": {
+      "0_0_Right": ["NSitem_0_70.-1", "NSitem_0_80"]
+    }
+  },
+  "Stage_03_05": {
+    "0_0_Right": {
+      "0_1_Left": ["NSitem_0_80"]
+    },
+    "0_1_Left": {
+      "0_0_Right": ["NSitem_0_80"]
+    }
+  },
+  "Stage_03_06": {
+    "0_0_Left": {
+      "0_2_Left": []
+    },
+    "0_0_Right": {
+      "0_2_Left": []
+    }
+  },
+  "Stage_03_11": {
+    "0_0_Left": {
+      "1_0_Right": []
+    },
+    "1_0_Right": {
+      "0_0_Left": []
+    }
+  },
+  "Stage_03_15": {
+    "0_0_Right": {
+      "0_1_Right": [["NSitem_0_70.-1", "NSitem_0_81"], "Flight"]
+    }
+  },
+  "Stage_04_01": {
+    "0_0_Right": {
+      "0_1_Right": [],
+      "0_2_Right": []
+    }
+  },
+  "Stage_04_05": {
+    "0_0_Left": {
+      "0_1_Left": ["NSitem_0_70.-1"]
+    }
+  },
+  "Stage_04_11": {
+    "0_0_Left": {
+      "1_1_Right": ["Height"]
+    },
+    "1_1_Right": {
+      "0_0_Left": []
+    }
+  },
+  "Stage_04_12": {
+    "0_0_Right": {
+      "100910": ["Height"]
+    }
+  },
+  "Stage_04_13": {
+    "0_0_Left": {
+      "1_0_Right": ["NSitem_0_70.-1", "NSitem_0_81"]
+    }
+  },
+  "Stage_04_22": {
+    "0_0_Left": {
+      "1_0_Right": ["NSitem_0_94", "Flight"]
+    },
+    "1_0_Right": {
+      "0_0_Left": ["NSitem_0_94", "Flight"]
+    }
+  },
+  "Stage_04_25": {
+    "0_0_Left": {
+      "100812": [["NSitem_0_81", "NSitem_0_84"], "Flight"]
+    },
+    "1_0_Right": {
+      "100812": [["NSitem_0_81", "NSitem_0_84"], "Flight"]
+    },
+    "0_1_Left": {
+      "100812": [["NSitem_0_81", "NSitem_0_84"], "Flight"]
+    }
+  },
+  "Stage_05_12": {
+    "0_0_Left": {
+      "101176": [["NSitem_0_70.-1", "NSitem_0_81"], ["NSitem_0_81", "NSitem_0_95"], "Flight"]
+    },
+    "0_0_Right": {
+      "101176": [["NSitem_0_70.-1", "NSitem_0_81"], ["NSitem_0_81", "NSitem_0_95"], "Flight"]
+    }
+  },
+  "Stage_05_17": {
+    "0_0_Left": {
+      "0_0_Bottom": ["NSitem_0_80"]
+    },
+    "1_0_Right": {
+      "0_0_Bottom": [["NSitem_0_70.-1", "NSitem_0_80"]]
+    }
+  },
+  "Stage_05_18": {
+    "0_0_Top": {
+      "101316": []
+    }
+  },
+  "Stage_05_24": {
+    "0_0_Left": {
+      "0_0_Right": ["Flight"]
+    }
+  },
+  "Stage_05_33": {
+    "0_0_Left": {
+      "3_0_Right": ["NSitem_0_90", "Flight"]
+    },
+    "3_0_Right": {
+      "0_0_Left": ["NSitem_0_90", "Flight"]
+    }
+  }
+}

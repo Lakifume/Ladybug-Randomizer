@@ -1,0 +1,400 @@
+[
+  {
+	"Textures": [
+	  "will_o_wisp_sprite"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "goblin_sprite",
+	  "goblin_run_sprite",
+	  "goblin_attack_sprite",
+	  "sigaraki_stand",
+	  "sigaraki_hahen"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "wolf_stand_sprite",
+	  "wolf_run_sprite",
+	  "wolf_jump_sprite"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "suiko_stand",
+	  "suiko_run",
+	  "suiko_jump"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "sakana_stand",
+	  "sakana_dir_change"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yadokai_stand",
+	  "yadokai_attack",
+	  "yadokai_bullet"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yadokai_stand",
+	  "yadokai_attack",
+	  "yadokai_bullet"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "mandorakora_stand",
+	  "mandorakora_attack",
+	  "mandorakora_attack_out",
+	  "mandorakora_tirami"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "skeleton_run",
+	  "skeleton_bullet",
+	  "skeleton_chage",
+	  "skeleton_attack",
+	  "skeleton_stand",
+	  "skeleton_run_china",
+	  "skeleton_bullet_china",
+	  "skeleton_chage_china",
+	  "skeleton_attack_china",
+	  "skeleton_stand_china"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_cafe_stand",
+	  "yousei_cafe_0",
+	  "yousei_cafe_1",
+	  "yousei_cafe_2"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_hataki_stand",
+	  "yousei_hataki_attack"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_taihou_stand",
+	  "yousei_taihou_chage",
+	  "yousei_taihou_attack",
+	  "yousei_taihou_bullet",
+	  "yousei_taihou_hibana",
+	  "yousei_taihou_doukasen"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017",
+	  "#ff8700",
+	  "#ffc700",
+	  "#ffff00"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "hinotama_kouma",
+	  "hinotama_kouma_move"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "chupa_stand",
+	  "chupa_run",
+	  "chupa_tame",
+	  "chupa_jump"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "heitai_stand",
+	  "heitai_run"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "huranken_stand",
+	  "huranken_run",
+	  "huranken_attack"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "kachu_stand",
+	  "kachu_run",
+	  "kachu_gurd",
+	  "kachu_tame",
+	  "kachu_attack"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_dekki_stand",
+	  "yousei_dekki_attack"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "gagoiru_stand",
+	  "gagoiru_jump",
+	  "gagoiru_shot"
+	],
+	"Blacklist": [
+	  "#ef070b",
+	  "#ff7b00",
+	  "#ffbb00",
+	  "#ffff00"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yurayura_obake",
+	  "yurayura_obake_dir_change"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_balkan_bullet",
+	  "yousei_balkan_shot",
+	  "yousei_balkan_stand"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "dragon_shot",
+	  "dragon_stand",
+	  "dragon_tamago"
+	],
+	"Blacklist": [
+	  "#ff5b00",
+	  "#ff5b00",
+	  "#ffd300",
+	  "#ffff96"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "yousei_fabu_shot",
+	  "yousei_fabu_stand"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "inoshishi_bullet",
+	  "inoshishi_shot",
+	  "inoshishi_stand"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "kurage"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "piero_bullet",
+	  "piero_husen",
+	  "piero_shot",
+	  "piero_stand"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "shinjitsu",
+	  "shinjitsu_add"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "usagi_enemy_sprite",
+	  "usagi_enemy_bullet"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "shishimai_sprite"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "hujin",
+	  "hujin_attack",
+	  "hujin_bullet",
+	  "hujin_bullet_end"
+	],
+	"Blacklist": [],
+	"ShiftType": "Simple"
+  },
+  {
+	"Textures": [
+	  "camera_yousei"
+	],
+	"Blacklist": [
+	  "#703800",
+	  "#dab18d",
+	  "#f0cfb1",
+	  "#fbe0c7",
+	  "#b46017"
+	],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "kitsune",
+	  "kitsune_attack",
+	  "kitsune_run"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "komainu",
+	  "komainu_attack",
+	  "komainu_bullet",
+	  "komainu_kaminari"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "kuroneko_attack",
+	  "kuroneko_run",
+	  "kuroneko"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "nishikigoi",
+	  "nishikigoi_dirchange",
+	  "nishikigoi_takinobori"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "raijin",
+	  "raijin_attack",
+	  "raijin_bit"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "tanuki_hanabi",
+	  "tanuki_hanabi_attack",
+	  "tanuki_hanabi_attack_after",
+	  "tanuki_hanabi_run"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  }
+]

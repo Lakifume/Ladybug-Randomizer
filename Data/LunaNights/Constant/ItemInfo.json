@@ -1,0 +1,122 @@
+{
+  "NSitem_0_00": {
+    "Name": "Thousand Daggers",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_01": {
+    "Name": "Stun Knife",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_02": {
+    "Name": "Auto Aim",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_03": {
+    "Name": "Chainsaw",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_04": {
+    "Name": "Shield Dagger",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_05": {
+    "Name": "Lost Holy Sword",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_06": {
+    "Name": "Bound Knife",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_20": {
+    "Name": "HPMaxUp",
+    "Type": "Upgrade",
+    "Count": 5
+  },
+  "NSitem_0_40": {
+    "Name": "MPMaxUp",
+    "Type": "Upgrade",
+    "Count": 5
+  },
+  "NSitem_0_60": {
+    "Name": "Knife",
+    "Type": "Upgrade",
+    "Count": 5
+  },
+  "NSitem_0_70": {
+    "Name": "Eternal Clock",
+    "Type": "Upgrade",
+    "Count": 4
+  },
+  "NSitem_0_70.-1": {
+    "Name": "Eternal Clock",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_80": {
+    "Name": "Sliding Knife",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_81": {
+    "Name": "Double Jump Knife",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_82": {
+    "Name": "Grip Knife",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_83": {
+    "Name": "Screw Knife",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_84": {
+    "Name": "Dash Spike",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_90": {
+    "Name": "Red Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91": {
+    "Name": "Yellow Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_92": {
+    "Name": "Green Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_93": {
+    "Name": "Blue Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_94": {
+    "Name": "Purple Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_95": {
+    "Name": "Ice Magatama",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSenemy_b_01": {
+    "Name": "Gem Tower",
+    "Type": "Gem",
+    "Count": 7
+  }
+}

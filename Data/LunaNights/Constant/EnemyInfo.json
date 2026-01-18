@@ -1,0 +1,150 @@
+{
+  "NSenemy_0_00": {
+    "StageID": 1,
+    "Weight": 1
+  },
+  "NSenemy_0_01": {
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_02": {
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_03": {
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_04": {
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_06": {
+    "StageID": 1,
+    "Weight": 1
+  },
+  "NSenemy_0_18": {
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_20": {
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_21": {
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_23": {
+    "StageID": 2,
+    "Weight": 3
+  },
+  "NSenemy_0_25": {
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_27": {
+    "StageID": 2,
+    "Weight": 1
+  },
+  "NSenemy_0_38": {
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_39": {
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_40": {
+    "StageID": 3,
+    "Weight": 3
+  },
+  "NSenemy_0_41": {
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_42": {
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_44": {
+    "StageID": 3,
+    "Weight": 1
+  },
+  "NSenemy_0_45": {
+    "StageID": 3,
+    "Weight": 1
+  },
+  "NSenemy_0_49": {
+    "StageID": 4,
+    "Weight": 1
+  },
+  "NSenemy_0_50": {
+    "StageID": 4,
+    "Weight": 3
+  },
+  "NSenemy_0_81": {
+    "StageID": 4,
+    "Weight": 1
+  },
+  "NSenemy_0_82": {
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_84": {
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_85": {
+    "StageID": 5,
+    "Weight": 3
+  },
+  "NSenemy_0_87": {
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_88": {
+    "StageID": 5,
+    "Weight": 3
+  },
+  "NSenemy_0_90": {
+    "StageID": 5,
+    "Weight": 3
+  },
+  "NSenemy_0_93": {
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_2b": {
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_2c": {
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_2d": {
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_2f": {
+    "StageID": 6,
+    "Weight": 1
+  },
+  "NSenemy_0_2g": {
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_2h": {
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_2j": {
+    "StageID": 6,
+    "Weight": 3
+  },
+  "NSenemy_0_2l": {
+    "StageID": 6,
+    "Weight": 3
+  }
+}

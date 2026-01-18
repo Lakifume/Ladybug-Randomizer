@@ -1,0 +1,173 @@
+[
+  {
+	"Textures": [
+	  "background_sprite",
+	  "stage00_enkei_coumajyou",
+	  678,
+	  679,
+	  681,
+	  697,
+	  698,
+	  680,
+	  682,
+	  696
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage00_map",
+	  "stage00_map2",
+	  "stage00_take_sprite",
+	  "stage00_take_front_sprite",
+	  "karakuri_tobira_sprite",
+	  "sika_hakusei",
+	  "hanebashi_sprite_00",
+	  "hanebashi_sprite_01",
+	  "hanebashi_sprite_02",
+	  "rot_door_sprite",
+	  "rot_door_sekisyo",
+	  "tuitate_sprite",
+	  "huyuu_tourou",
+	  2086,
+	  2088,
+	  2092,
+	  2354,
+	  2390
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "tileset3",
+	  "hakurei_sprite"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage01_map",
+	  "stage01_map2",
+	  "tileset3_2",
+	  "end_kouma_naisou_A",
+	  "end_kouma_naisou_B",
+	  "end_kouma_naisou_C",
+	  "end_kouma_naisou_D",
+	  2087,
+	  2094,
+	  2389
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage02_map",
+	  "stage02_map2",
+	  "tileset3_3",
+	  "background02_sprite",
+	  "huyuu_tosyo_yuka",
+	  "ending_desk",
+	  "ending_book",
+	  2085,
+	  2098,
+	  2099,
+	  2353,
+	  2385
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage03_map",
+	  "stage03_map2",
+	  "stage03_back_tower",
+	  "stage03_tokei_center",
+	  "stage03_tokei_parts",
+	  "stage03_hari",
+	  "stage03_hari_min",
+	  "stage03_hari_min_G",
+	  "break_bridge",
+	  "break_bridge_hahen",
+	  "break_bridge_des",
+	  "ending_tourou_C",
+	  "einding_tourou_D",
+	  2093,
+	  2100,
+	  2388
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "background_cloud"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage04_map",
+	  "stage04_map2",
+	  "stage04_backwindow",
+	  "stage04_stone_sprite",
+	  "stage04_stone_gyokuza",
+	  "stage04_gyokuza_tesuri",
+	  "stage04_gyokuza_kaidan",
+	  "ending_tourou_A",
+	  "ending_tourou_B",
+	  2089,
+	  2091,
+	  2095,
+	  2097,
+	  2386
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "stage05_map",
+	  "stage05_map2",
+	  "stage05_hakurei_sprite",
+	  "stage05_hyakurei_green",
+	  "stage05_sakura",
+	  "stage05_pink_storm",
+	  "taiko_bashi_gia",
+	  "reimu2_gadget",
+	  "reimu2_gadget_side",
+	  "reimu2_gadget_side_back",
+	  2090,
+	  2096,
+	  2387
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  5072,
+	  5345,
+	  5671,
+	  6147,
+	  6718,
+	  6924,
+	  7448
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  },
+  {
+	"Textures": [
+	  "end_kumo_front",
+	  "end_kumo_back"
+	],
+	"Blacklist": [],
+	"ShiftType": "RGB"
+  }
+]
