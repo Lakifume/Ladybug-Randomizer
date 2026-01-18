@@ -1,0 +1,257 @@
+{
+  "NSenemy_0_000": {
+    "Name": "Imp",
+    "StageID": 1,
+    "Weight": 1
+  },
+  "NSenemy_0_001": {
+    "Name": "Goblin",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_002": {
+    "Name": "Wolf",
+    "StageID": 1,
+    "Weight": 1
+  },
+  "NSenemy_0_003": {
+    "Name": "Cockatrice",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_004": {
+    "Name": "Lizardman",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_006": {
+    "Name": "Gargoyle",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_007": {
+    "Name": "Harpy",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_028": {
+    "Name": "Dragon Tooth Warrior",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_029": {
+    "Name": "Mummy",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_030": {
+    "Name": "Door Imitator",
+    "StageID": 1,
+    "Weight": 2
+  },
+  "NSenemy_0_032": {
+    "Name": "Scarlet Vulture",
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_033": {
+    "Name": "Skeleton",
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_034": {
+    "Name": "Pixie",
+    "StageID": 2,
+    "Weight": 1
+  },
+  "NSenemy_0_035": {
+    "Name": "Centipede",
+    "StageID": 2,
+    "Weight": 3
+  },
+  "NSenemy_0_036": {
+    "Name": "Troll",
+    "StageID": 2,
+    "Weight": 3
+  },
+  "NSenemy_0_037": {
+    "Name": "Undine",
+    "StageID": 2,
+    "Weight": 1
+  },
+  "NSenemy_0_038": {
+    "Name": "Kobold",
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_039": {
+    "Name": "Goblin Chief",
+    "StageID": 2,
+    "Weight": 2
+  },
+  "NSenemy_0_041": {
+    "Name": "Will o' Wisp",
+    "StageID": 2,
+    "Weight": 1
+  },
+  "NSenemy_0_082": {
+    "Name": "Shadow Stalker",
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_083": {
+    "Name": "Medusa",
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_084": {
+    "Name": "Lesser Dragon",
+    "StageID": 3,
+    "Weight": 3
+  },
+  "NSenemy_0_086": {
+    "Name": "Ethnoa",
+    "StageID": 3,
+    "Weight": 3
+  },
+  "NSenemy_0_090": {
+    "Name": "Shade",
+    "StageID": 3,
+    "Weight": 1
+  },
+  "NSenemy_0_091": {
+    "Name": "Zalbard",
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_092": {
+    "Name": "Fria Harpy",
+    "StageID": 3,
+    "Weight": 2
+  },
+  "NSenemy_0_094": {
+    "Name": "Zombie",
+    "StageID": 3,
+    "Weight": 1
+  },
+  "NSenemy_0_150": {
+    "Name": "Goblin Shaman",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_151": {
+    "Name": "Dark Elf",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_153": {
+    "Name": "Giant Scorpion",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_154": {
+    "Name": "Master Mummy",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_155": {
+    "Name": "Minotaur",
+    "StageID": 4,
+    "Weight": 3
+  },
+  "NSenemy_0_156": {
+    "Name": "Sandworm",
+    "StageID": 4,
+    "Weight": 3
+  },
+  "NSenemy_0_157": {
+    "Name": "Crocodile",
+    "StageID": 4,
+    "Weight": 3
+  },
+  "NSenemy_0_158": {
+    "Name": "Valkyrie",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_159": {
+    "Name": "Noble Lizardman",
+    "StageID": 4,
+    "Weight": 2
+  },
+  "NSenemy_0_175": {
+    "Name": "Dryad",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_177": {
+    "Name": "Griffon",
+    "StageID": 5,
+    "Weight": 3
+  },
+  "NSenemy_0_179": {
+    "Name": "Gizmo",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_185": {
+    "Name": "Wight",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_186": {
+    "Name": "Chest Imitator",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_187": {
+    "Name": "Giant Tarantula",
+    "StageID": 5,
+    "Weight": 3
+  },
+  "NSenemy_0_189": {
+    "Name": "Gnome",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_210": {
+    "Name": "Oak",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_211": {
+    "Name": "Claw Beast",
+    "StageID": 5,
+    "Weight": 2
+  },
+  "NSenemy_0_212": {
+    "Name": "Stealth Stalker",
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_213": {
+    "Name": "Manticore",
+    "StageID": 6,
+    "Weight": 3
+  },
+  "NSenemy_0_215": {
+    "Name": "Ragnakang",
+    "StageID": 6,
+    "Weight": 3
+  },
+  "NSenemy_0_217": {
+    "Name": "Basilisk",
+    "StageID": 6,
+    "Weight": 3
+  },
+  "NSenemy_0_219": {
+    "Name": "Deela Harpy King",
+    "StageID": 6,
+    "Weight": 2
+  },
+  "NSenemy_0_220": {
+    "Name": "Lifeless King",
+    "StageID": 6,
+    "Weight": 3
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "bgm00": {
+    "Type": "World",
+    "Modifier": 1.0
+  },
+  "bgm01": {
+    "Type": "World",
+    "Modifier": 1.0
+  },
+  "bgm02": {
+    "Type": "World",
+    "Modifier": 1.0
+  },
+  "bgm03": {
+    "Type": "World",
+    "Modifier": 0.63
+  },
+  "bgm04": {
+    "Type": "World",
+    "Modifier": 0.89
+  },
+  "bgm05": {
+    "Type": "World",
+    "Modifier": 0.89
+  },
+  "boss00": {
+    "Type": "Boss",
+    "Modifier": 1.0
+  },
+  "boss01": {
+    "Type": "Boss",
+    "Modifier": 1.0
+  },
+  "boss02": {
+    "Type": "Boss",
+    "Modifier": 1.0
+  },
+  "boss03": {
+    "Type": "Boss",
+    "Modifier": 1.0
+  },
+  "ivent05": {
+    "Type": "Boss",
+    "Modifier": 1.0
+  },
+  "ivent00": {
+    "Type": "Event",
+    "Modifier": 1.0
+  },
+  "ivent01": {
+    "Type": "Event",
+    "Modifier": 1.0
+  },
+  "ivent02": {
+    "Type": "Event",
+    "Modifier": 1.0
+  },
+  "ivent03": {
+    "Type": "Event",
+    "Modifier": 1.0
+  },
+  "ivent04": {
+    "Type": "Event",
+    "Modifier": 1.0
+  },
+  "ivent06": {
+    "Type": "Event",
+    "Modifier": 1.0
+  }
+}

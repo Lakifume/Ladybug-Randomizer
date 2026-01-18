@@ -1,0 +1,157 @@
+{
+  "NSitem_0_00": {
+    "Name": "Will O Wisp",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_01": {
+    "Name": "Undine",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_02": {
+    "Name": "Stone Blast",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_03": {
+    "Name": "Invisibility",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_04": {
+    "Name": "Windstorm",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_05": {
+    "Name": "Firestorm",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_06": {
+    "Name": "Hamadryad",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_07": {
+    "Name": "Shade",
+    "Type": "Spell",
+    "Count": 1
+  },
+  "NSitem_0_20": {
+    "Name": "HP Max Up",
+    "Type": "Upgrade",
+    "Count": 5
+  },
+  "NSitem_0_40": {
+    "Name": "MP Max Up",
+    "Type": "Upgrade",
+    "Count": 5
+  },
+  "NSitem_0_60": {
+    "Name": "Spirit of Wind Up",
+    "Type": "Upgrade",
+    "Count": 3
+  },
+  "NSitem_0_70": {
+    "Name": "Spirit of Flame Up",
+    "Type": "Upgrade",
+    "Count": 3
+  },
+  "bow_item_ob.131": {
+    "Name": "Bow",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_81": {
+    "Name": "Salamander",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_82": {
+    "Name": "Sliding",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_83": {
+    "Name": "Double Jump",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_84": {
+    "Name": "Water Breather",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_85": {
+    "Name": "High Jump",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91.288": {
+    "Name": "Craftsman Soul Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91.289": {
+    "Name": "Knight Soul Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91.290": {
+    "Name": "Thief Soul Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91.291": {
+    "Name": "Priest Soul Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "NSitem_0_91.292": {
+    "Name": "Sorcerer Soul Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.147": {
+    "Name": "Blue Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.223": {
+    "Name": "Green Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.277": {
+    "Name": "Yellow Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.322": {
+    "Name": "Red Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.390": {
+    "Name": "Purple Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "rock_switch_ob.411": {
+    "Name": "Teal Gate Key",
+    "Type": "Key",
+    "Count": 1
+  },
+  "sword_item_ob": {
+    "Name": "Sword",
+    "Type": "Weapon",
+    "Count": 18
+  },
+  "bow_item_ob": {
+    "Name": "Bow",
+    "Type": "Weapon",
+    "Count": 9
+  }
+}

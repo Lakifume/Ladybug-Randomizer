@@ -1,0 +1,188 @@
+{
+  "Stage_00_18": {
+    "0_0_Left": {
+      "0_2_Right": ["FSlide"],
+      "0_3_Left": [["NSitem_0_81", "rock_switch_ob.147"]]
+    },
+    "0_0_Right": {
+      "0_2_Right": ["FSlide"],
+      "0_3_Left": [["NSitem_0_81", "rock_switch_ob.147"]]
+    },
+    "0_0_Bottom": {},
+    "0_1_Left": {
+      "0_2_Right": ["FSlide"],
+      "0_3_Left": [["NSitem_0_81", "rock_switch_ob.147"]]
+    },
+    "0_2_Right": {
+      "0_0_Left": ["FSlide"],
+      "0_0_Right": ["FSlide"],
+      "0_0_Bottom": [["FSlide", "SoulsK"]],
+      "0_1_Left": ["FSlide"],
+      "0_3_Left": [["NSitem_0_82", "rock_switch_ob.147"]]
+    },
+    "0_3_Left": {
+      "0_0_Left": [["NSitem_0_81", "rock_switch_ob.147"]],
+      "0_0_Right": [["NSitem_0_81", "rock_switch_ob.147"]],
+      "0_0_Bottom": [["NSitem_0_81", "SoulsK", "rock_switch_ob.147"]],
+      "0_1_Left": [["NSitem_0_81", "rock_switch_ob.147"]]
+    }
+  },
+  "Stage_00_48": {
+    "0_0_Right": {
+      "0_1_Left": [["NSitem_0_81", "NSitem_0_82"]]
+    },
+    "0_1_Left": {
+      "0_0_Right": [["NSitem_0_81", "NSitem_0_82"]]
+    }
+  },
+  "Stage_01_05": {
+    "0_0_Right": {
+      "0_1_Right": ["NSitem_0_81"]
+    },
+    "0_1_Right": {
+      "0_0_Right": ["NSitem_0_81"]
+    }
+  },
+  "Stage_01_20": {
+    "0_0_Left": {
+      "2_0_Right": [["NSitem_0_81", "Height"]]
+    },
+    "2_0_Right": {
+      "0_0_Left": [["NSitem_0_81", "Height"]]
+    }
+  },
+  "Stage_01_29": {
+    "0_0_Left": {
+      "0_1_Left": [["NSitem_0_81", "Height"], "NSitem_0_85"],
+      "1_1_Right": [["NSitem_0_81", "Height", "rock_switch_ob.223"], ["NSitem_0_85", "rock_switch_ob.223"]]
+    }
+  },
+  "Stage_02_00": {
+    "0_0_Left": {
+      "1_0_Right": ["bow_item_ob.131"]
+    },
+    "1_0_Right": {
+      "0_0_Left": ["bow_item_ob.131"]
+    }
+  },
+  "Stage_02_07": {
+    "0_0_Left": {
+      "0_1_Right": ["NSitem_0_81"],
+      "0_2_Left": [["NSitem_0_81", "Height"]],
+      "0_2_Right": [["NSitem_0_81", "Height"]]
+    },
+    "0_0_Right": {
+      "0_1_Right": ["NSitem_0_81"],
+      "0_2_Left": [["NSitem_0_81", "Height"]],
+      "0_2_Right": [["NSitem_0_81", "Height"]]
+    },
+    "0_1_Right": {
+      "0_0_Left": ["NSitem_0_81"],
+      "0_0_Right": ["NSitem_0_81"]
+    },
+    "0_2_Left": {
+      "0_0_Left": ["NSitem_0_81"],
+      "0_0_Right": ["NSitem_0_81"]
+    },
+    "0_2_Right": {
+      "0_0_Left": ["NSitem_0_81"],
+      "0_0_Right": ["NSitem_0_81"]
+    }
+  },
+  "Stage_02_25": {
+    "0_0_Left": {
+      "1_0_Right": ["bow_item_ob.131"]
+    },
+    "0_0_Top": {
+      "1_0_Right": ["bow_item_ob.131"]
+    },
+    "1_0_Right": {
+      "0_0_Left": ["bow_item_ob.131"],
+      "0_0_Top": [["bow_item_ob.131", "Height"]]
+    }
+  },
+  "Stage_02_28": {
+    "0_0_Right": {
+      "0_1_Left": [["bow_item_ob.131", "NSitem_0_81", "Height"], ["NSitem_0_81", "NSitem_0_85"]]
+    },
+    "0_1_Left": {
+      "0_0_Right": ["NSitem_0_81"]
+    }
+  },
+  "Stage_02_43": {
+    "1_0_Right": {
+      "0_1_Left": [["NSitem_0_81", "Height"]]
+    },
+    "0_1_Left": {
+      "1_0_Right": ["NSitem_0_81"],
+      "1_1_Right": [["NSitem_0_81", "Height"]]
+    },
+    "1_1_Right": {
+      "0_1_Left": [["NSitem_0_81", "Height"]]
+    }
+  },
+  "Stage_02_53": {
+    "0_0_Left": {
+      "2_0_Right": ["bow_item_ob.131"]
+    },
+    "2_0_Right": {
+      "0_0_Left": ["bow_item_ob.131"]
+    }
+  },
+  "Stage_03_12": {
+    "0_0_Left": {
+      "1_0_Right": ["bow_item_ob.131", "FSlide"]
+    },
+    "1_0_Right": {
+      "0_0_Left": ["bow_item_ob.131", "FSlide"]
+    }
+  },
+  "Stage_03_23": {
+    "0_0_Left": {
+      "0_1_Left": [["NSitem_0_81", "Height"]]
+    },
+    "1_0_Right": {
+      "0_1_Left": [["NSitem_0_81", "Height"]]
+    },
+    "0_1_Left": {
+      "0_0_Left": ["NSitem_0_81"],
+      "1_0_Right": ["NSitem_0_81"],
+      "1_1_Right": ["NSitem_0_81"]
+    },
+    "1_1_Right": {
+      "0_1_Left": ["NSitem_0_81"]
+    }
+  },
+  "Stage_04_11": {
+    "0_0_Left": {
+      "2_0_Right": ["FSlide"]
+    },
+    "2_0_Right": {
+      "0_0_Left": ["FSlide"],
+	  "101014": ["NSitem_0_81"]
+    }
+  },
+  "Stage_04_12": {
+    "0_0_Left": {
+      "1_0_Right": [["NSitem_0_81", "NSitem_0_82", "bow_item_ob.131"]]
+    }
+  },
+  "Stage_04_21": {
+    "0_0_Left": {
+      "0_5_Left": [["bow_item_ob.131", "NSitem_0_82", "Height"]]
+    },
+    "0_5_Left": {
+      "0_0_Left": [["bow_item_ob.131", "NSitem_0_82"]]
+    }
+  },
+  "Stage_04_24": {
+    "0_1_Right": {
+      "0_0_Right": ["NSitem_0_81"]
+    }
+  },
+  "Stage_04_41": {
+    "0_1_Left": {
+      "0_3_Right": [["bow_item_ob.131", "Height"]]
+    }
+  }
+}
