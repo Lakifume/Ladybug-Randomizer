@@ -70,3 +70,52 @@ Remove the endgame boss rush in Wonder Labyrinth's last stage, simplifying relat
 ## Speedrun Logic
 
 Toggle a more advanced item logic that may require in-depth knowledge of the game's tricks as well as taking more risks to reach an item.
+
+# Setup
+
+Run the executable and start by specifying the path to where your game is installed. From there simply pick your options and press Randomize.
+If you are unusure what an option does hover over its widget to see a tooltip.
+You also have the option to automatically restore your game directory to its original state afterwards.
+And if you get stuck at any point and need to look at the solution use the Load Spoiler option and select the corresponding spoiler log.
+
+# Things to note
+
+- Progression abilities in both games were programmed to work in a skill tree fashion rather than each giving a unique ability, so pickup up any of them will only progress you to the next ability.
+- The only exception to the skill tree rule is Wonder Labyrinth's high jump which straight up gives you every ability at once.
+- The 2nd, 3rd and 4th randomization options determine whether these item types will be included in the random item pool. If unselected each type will simply be shuffled within itself.
+- The less item randomization options that you select alongside Key Items the more likely a seed is to fail generating due to the restricted amount of options for the next key to be placed without making the game unbeatable.
+- Due to limitations the Ice Magatama and first Eternal Clock items will not be randomized if the only options selected alongside Key Items is Gem Towers
+- Tilesets were edited in a few spots to avoid softlocks or conflicts.
+- The 50x jump platform in stage 1 of Wonder Labyrinth was replaced by a soul gate. The soul crusher check will now require all soul keys to get to.
+- Due to having to edit large assets the mod will take longer to generate if music or color randomization is selected.
+- The item tracker has an option to warp you back to your initial spawn location which may be required to complete reverse rando seeds.
+
+# Troubleshooting
+
+- If the program fails to open when double clicking the exe open it via command prompt instead to be able to read the error.
+- If you get an error get the zip file again, right click on it, go to Properties, check Unblock and extract again.
+- If problems still persist open an issue on Github and try to be as specific as possible.
+
+# Changelog
+
+1.1.0:
+- Added an option for starting the game from the top of the map
+- Added an option to unlock Luna Nights's extra stage from the start
+- Added an option to require all colored keys to beat the game
+- Implemented save file editing to remove problematic cutscenes
+- Implemented a semi-automatic item and boss tracker
+- Added an option to warp to the start in the item tracker
+- Moved the built-in extra game modes to the rando interface
+- Included basic downthrow/downslash hovers in the default logic
+- Included minor damage boosts in the default Wonder Labyrinth logic
+- Replaced speedrun logic in Wonder Labyrinth by hitless logic when OHKO mode is on
+- Fixed some of the major volume differences in music rando
+
+1.0.0:
+- Added an option to randomize background music
+- Added options to randomize the color of sprites
+- Added an option to randomize dialogues
+- Added an option for speedrun logic (experimental)
+- Added an option to skip Wonder Labyrinth's boss rush
+- Included Nitori's first stopwatch in the randomization
+- Included Wonder Labyrinth's first bow in the randomization
