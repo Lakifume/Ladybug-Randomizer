@@ -677,12 +677,12 @@ def get_save_file_path():
         file_name = os.path.split(os.path.splitext(file_path)[0])[-1]
         used_index.append(int(file_name[-1]))
     used_index.sort()
-    save_index = None
+    save_index = -1
     for index in range(3):
         if not index in used_index:
             save_index = index
             break
-    if not save_index:
+    if save_index < 0:
         raise Exception("No free save data slots found, please delete at least one of your in-game save files")
     save_name = f"game{save_index}.sav"
     save_file_path = os.path.join(appdata, folder, save_name)
