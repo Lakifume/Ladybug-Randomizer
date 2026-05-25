@@ -283,7 +283,7 @@ def place_next_key(chosen_item):
         try:
             chosen_check = pick_key_check(all_available_checks)
         except IndexError:
-            raise CompletionError
+            raise CompletionError("Failed to generate seed.\nItem pool too restricted.")
     key_item_to_location[chosen_item] = chosen_check
     key_items.remove(chosen_item)
     #Increment ability index
@@ -448,7 +448,7 @@ def write_spoiler_log(seed):
     spoiler = {}
     spoiler["Start"] = MapHelper.get_door_room(all_available_doors[0])
     spoiler["Key"] = copy.deepcopy(key_item_to_location)
-    with open(f"Spoiler\\{Manager.game_name} - {seed}.json", "w") as file_writer:
+    with open(f"Spoiler/{Manager.game_name} - {seed}.json", "w") as file_writer:
         file_writer.write(json.dumps(spoiler, indent=2))
 
 def write_save_info():

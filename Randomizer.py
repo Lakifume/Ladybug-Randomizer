@@ -18,12 +18,14 @@ import random
 import os
 import shutil
 import requests
+import traceback
 import zipfile
 import subprocess
 
 #Get script name
 
 script_name = os.path.splitext(os.path.basename(__file__))[0]
+exc_info = None
 
 #variables
 
@@ -36,12 +38,12 @@ game_to_visuals = {
 
 config = configparser.ConfigParser()
 config.optionxform = str
-config.read("Data\\config.ini")
+config.read("Data/config.ini")
 
 #Functions
 
 def write_config():
-    with open("Data\\config.ini", "w") as file_writer:
+    with open("Data/config.ini", "w") as file_writer:
         config.write(file_writer)
     sys.exit()
 
@@ -50,7 +52,7 @@ def write_config():
 class Signaller(QObject):
     progress = Signal(int)
     finished = Signal()
-    error    = Signal(str)
+    error    = Signal()
 
 class Generate(QThread):
     def __init__(self, progress_bar, seed, path):
@@ -63,19 +65,18 @@ class Generate(QThread):
     def run(self):
         try:
             self.process()
-        except Gameplay.CompletionError:
-            self.signaller.error.emit("Failed to generate seed.\nItem pool too restricted.")
         except Exception:
-            self.signaller.error.emit("An error has occured.\nCheck the command window for more detail.")
-            raise
+            global exc_info
+            exc_info = sys.exc_info()
+            self.signaller.error.emit()
 
     def process(self):
         current = 0
         self.signaller.progress.emit(current)
         
         #Backup files
-        shutil.copyfile(f"{self.path}\\data.win", f"{self.path}\\data.bak")
-        shutil.copytree(f"{self.path}\\data", f"{self.path}\\backup")
+        shutil.copyfile(f"{self.path}/data.win", f"{self.path}/data.bak")
+        shutil.copytree(f"{self.path}/data", f"{self.path}/backup")
         
         #Init
         Gameplay.init()
@@ -277,7 +278,7 @@ class Update(QThread):
         
         new_config = configparser.ConfigParser()
         new_config.optionxform = str
-        new_config.read("Data\\config.ini")
+        new_config.read("Data/config.ini")
         for each_section in new_config.sections():
             for (each_key, each_val) in new_config.items(each_section):
                 if each_key == "sVersion":
@@ -286,7 +287,7 @@ class Update(QThread):
                     new_config.set(each_section, each_key, config.get(each_section, each_key))
                 except (configparser.NoSectionError, configparser.NoOptionError):
                     continue
-        with open("Data\\config.ini", "w") as file_writer:
+        with open("Data/config.ini", "w") as file_writer:
             new_config.write(file_writer)
         
         #Exit
@@ -306,7 +307,7 @@ class DropFolder(QObject):
                         event.accept()
         if event.type() == QEvent.Drop:
             md = event.mimeData()
-            watched.setText(md.urls()[0].toLocalFile().replace("/", "\\"))
+            watched.setText(md.urls()[0].toLocalFile())
             return True
         return super().eventFilter(watched, event)
 
@@ -322,9 +323,10 @@ class QCheckBox(QCheckBox):
         if self.checkState() == Qt.Checked:
             self.setCheckState(Qt.PartiallyChecked)
 
-class MainWindow(QWidget):
+class MainWindow(QGraphicsView):
     def __init__(self):
         super().__init__()
+        sys.excepthook = self.exception_hook
         self.setEnabled(False)
         self.init()
         self.check_for_updates()
@@ -558,7 +560,7 @@ class MainWindow(QWidget):
         output_hbox.addWidget(self.output_field)
         
         browse_button = QPushButton()
-        browse_button.setIcon(QPixmap("Data\\browse.png"))
+        browse_button.setIcon(QPixmap("Data/browse.png"))
         browse_button.clicked.connect(self.browse_button_clicked)
         output_hbox.addWidget(browse_button)
         
@@ -590,23 +592,23 @@ class MainWindow(QWidget):
         
         main_vbox.addLayout(button_hbox)
         
-        #Window
-        
-        self.setLayout(main_vbox)
-        self.setFixedSize(516, 448)
-        self.setWindowTitle(script_name)
-        self.setWindowIcon(QIcon("Data\\icon.png"))
-        self.show()
-        
-        self.radio_button_1.setChecked(config.getboolean("Game", "bLunaNights"))
-        self.radio_button_2.setChecked(config.getboolean("Game", "bWonderLab"))
-        
         #Position
         
         center = QScreen.availableGeometry(QApplication.primaryScreen()).center()
         geo = self.frameGeometry()
         geo.moveCenter(center)
         self.move(geo.topLeft())
+        
+        #Window
+        
+        self.setLayout(main_vbox)
+        self.setFixedSize(516, 448)
+        self.setWindowTitle(script_name)
+        self.setWindowIcon(QIcon("Data/icon.png"))
+        self.show()
+        
+        self.radio_button_1.setChecked(config.getboolean("Game", "bLunaNights"))
+        self.radio_button_2.setChecked(config.getboolean("Game", "bWonderLab"))
         
         QApplication.processEvents()
 
@@ -617,7 +619,6 @@ class MainWindow(QWidget):
         if not checked:
             self.check_box_11.setChecked(False)
             self.check_box_18.setChecked(False)
-        self.fix_background_glitch()
 
     def check_box_2_changed(self):
         checked = self.check_box_2.isChecked()
@@ -639,7 +640,6 @@ class MainWindow(QWidget):
         checked = self.check_box_5.isChecked()
         config.set("Gameplay", "bEnemyTypes", str(checked).lower())
         self.spin_button_2.setVisible(checked)
-        self.fix_background_glitch()
 
     def check_box_6_changed(self):
         checked = self.check_box_6.isChecked()
@@ -751,6 +751,7 @@ class MainWindow(QWidget):
         sub_color  = game_to_visuals[game][1]
         #Update colors
         self.setStyleSheet("QWidget{background: transparent; color: #ffffff; font-family: Cambria; font-size: 18px}"
+        + "QGraphicsView{border-image: url(Data/" + game + "/background.png)}"
         + "QMessageBox{background-color: " + main_color + "}"
         + "QDialog{background-color: " + main_color + "}"
         + "QProgressDialog{background-color: " + main_color + "}"
@@ -758,11 +759,6 @@ class MainWindow(QWidget):
         + "QLineEdit{background-color: " + main_color + "; selection-background-color: " + sub_color + "}"
         + "QProgressBar{border: 2px solid white; text-align: center; font: bold}"
         + "QToolTip{border: 1px solid white; background-color: " + main_color + "; color: #ffffff; font-family: Cambria; font-size: 18px}")
-        #Update background
-        background = QPixmap(f"Data\\{game}\\background.png")
-        self.palette = QPalette()
-        self.palette.setBrush(QPalette.Window, background)
-        self.setPalette(self.palette)
     
     def create_seed_layout(self):
         self.seed_layout = QGridLayout()
@@ -779,14 +775,6 @@ class MainWindow(QWidget):
         seed_button_2 = QPushButton("Confirm")
         seed_button_2.clicked.connect(self.seed_button_2_clicked)
         self.seed_layout.addWidget(seed_button_2, 1, 1, 1, 1)
-    
-    def fix_background_glitch(self):
-        try:
-            self.box_1.setStyleSheet("")
-            QApplication.processEvents()
-            self.setPalette(self.palette)
-        except TypeError:
-            return
     
     def new_output(self, output):
         game = "LunaNights" if config.getboolean("Game", "bLunaNights") else "WonderLab"
@@ -811,23 +799,16 @@ class MainWindow(QWidget):
     def update_finished(self):
         sys.exit()
     
-    def thread_failure(self, reason):
+    def thread_failure(self):
         self.progress_bar.close()
         self.setEnabled(True)
-        self.notify_error(reason)
-    
-    def notify_error(self, message):
-        box = QMessageBox(self)
-        box.setWindowTitle("Error")
-        box.setIcon(QMessageBox.Critical)
-        box.setText(message)
-        box.exec()
+        raise exc_info[1].with_traceback(exc_info[2])
 
     def button_1_clicked(self):
         
         #Determine game
         Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
-        game_path = config.get("Misc", f"s{Manager.game_name}GameDir")
+        game_path = fr"{config.get("Misc", f"s{Manager.game_name}GameDir")}"
         
         #Check path
         if not os.path.isdir(game_path):
@@ -865,7 +846,7 @@ class MainWindow(QWidget):
         
         #Determine game
         Manager.init(LunaNights if config.getboolean("Game", "bLunaNights") else WonderLab)
-        game_path = config.get("Misc", f"s{Manager.game_name}GameDir")
+        game_path = fr"{config.get("Misc", f"s{Manager.game_name}GameDir")}"
         
         #Check path
         if not os.path.isdir(game_path):
@@ -885,7 +866,7 @@ class MainWindow(QWidget):
         box.exec()
     
     def button_3_clicked(self):
-        file = QFileDialog.getOpenFileName(parent=self, caption="File", filter="*.json")[0].replace("/", "\\")
+        file = QFileDialog.getOpenFileName(parent=self, caption="File", filter="*.json")[0].replace("/", "/")
         if not file:
             return
         
@@ -944,7 +925,7 @@ class MainWindow(QWidget):
         self.item_tracker = ItemTracker.MainWindow(f"{save_file_path}.sav")
     
     def browse_button_clicked(self):
-        path = QFileDialog.getExistingDirectory(self, "Folder").replace("/", "\\")
+        path = QFileDialog.getExistingDirectory(self, "Folder")
         if path:
             self.output_field.setText(path)
     
@@ -964,12 +945,12 @@ class MainWindow(QWidget):
     
     def restore_vanilla(self, game_path):
         #Restore game files
-        if os.path.isfile(f"{game_path}\\data.bak"):
-            os.remove(f"{game_path}\\data.win")
-            os.rename(f"{game_path}\\data.bak", f"{game_path}\\data.win")
-        if os.path.isdir(f"{game_path}\\backup"):
-            shutil.rmtree(f"{game_path}\\data")
-            os.rename(f"{game_path}\\backup", f"{game_path}\\data")
+        if os.path.isfile(f"{game_path}/data.bak"):
+            os.remove(f"{game_path}/data.win")
+            os.rename(f"{game_path}/data.bak", f"{game_path}/data.win")
+        if os.path.isdir(f"{game_path}/backup"):
+            shutil.rmtree(f"{game_path}/data")
+            os.rename(f"{game_path}/backup", f"{game_path}/data")
         #Reset save files
         for file in Manager.get_save_file_list():
             os.remove(file)
@@ -1014,6 +995,16 @@ class MainWindow(QWidget):
                 self.setEnabled(True)
         else:
             self.setEnabled(True)
+    
+    def exception_hook(self, exc_type, exc_value, exc_traceback):
+        box = QMessageBox(self)
+        box.setWindowTitle("Error")
+        box.setIcon(QMessageBox.Critical)
+        box.setText("An error has occured")
+        traceback_format = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        traceback_string = "".join(traceback_format)
+        box.setInformativeText(traceback_string)
+        box.exec()
 
 def main():
     app = QApplication(sys.argv)

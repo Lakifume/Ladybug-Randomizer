@@ -140,11 +140,11 @@ def init(module):
 def load_constant():
     global constant
     constant = {}
-    for file in os.listdir(f"Data\\{game_name}\\Constant"):
+    for file in os.listdir(f"Data/{game_name}/Constant"):
         file_name = os.path.splitext(file)[0]
-        with open(f"Data\\{game_name}\\Constant\\" + file, "r", encoding="utf8") as file_reader:
+        with open(f"Data/{game_name}/Constant/" + file, "r", encoding="utf8") as file_reader:
             constant[file_name] = json.load(file_reader)
-    with open(f"Data\\{game_name}\\Save\\Save.txt", "r", encoding="utf8") as file_reader:
+    with open(f"Data/{game_name}/Save/Save.txt", "r", encoding="utf8") as file_reader:
         constant["SaveInfo"] = file_reader.readlines()
 
 def unpack_game_data(game_path):
@@ -152,7 +152,7 @@ def unpack_game_data(game_path):
     if not os.path.isdir("Game"):
         os.makedirs("Game")
     #Unpack data.win
-    with open(f"{game_path}\\data.win", "rb") as file_reader:
+    with open(f"{game_path}/data.win", "rb") as file_reader:
         file_reader.seek(0, os.SEEK_END)
         data_size = file_reader.tell()
         current_offset = 8
@@ -160,24 +160,24 @@ def unpack_game_data(game_path):
             file_reader.seek(current_offset)
             chunk_name = file_reader.read(4).decode("utf-8")
             chunk_size = int.from_bytes(file_reader.read(4), "little") + 8
-            with open(f"Game\\{chunk_name}", "wb") as file_writer:
+            with open(f"Game/{chunk_name}", "wb") as file_writer:
                 file_reader.seek(current_offset)
                 file_writer.write(file_reader.read(chunk_size))
             chunk_to_offset[chunk_name] = current_offset
             current_offset += chunk_size
     unpack_textures()
     #Read game text
-    with open(f"{game_path}\\data\\dial_e.txt", "r", encoding="utf8") as file_reader:
+    with open(f"{game_path}/data/dial_e.txt", "r", encoding="utf8") as file_reader:
         game_text.extend(file_reader.readlines())
 
 def repack_game_data(game_path):
     #Repack data.win
     repack_textures()
-    with open(f"{game_path}\\data.win", "r+b") as file_writer:
+    with open(f"{game_path}/data.win", "r+b") as file_writer:
         file_writer.truncate(8)
         file_writer.seek(8)
         for chunk in chunk_to_offset:
-            with open(f"Game\\{chunk}", "rb") as file_reader:
+            with open(f"Game/{chunk}", "rb") as file_reader:
                 file_writer.write(file_reader.read())
         file_writer.seek(0, os.SEEK_END)
         data_size = file_writer.tell()
@@ -186,14 +186,14 @@ def repack_game_data(game_path):
     #Remove the game directory
     shutil.rmtree("Game")
     #Write text changes
-    with open(f"{game_path}\\data\\dial_e.txt", "w", encoding="utf8") as file_writer:
+    with open(f"{game_path}/data/dial_e.txt", "w", encoding="utf8") as file_writer:
         file_writer.writelines(game_text)
 
 def unpack_textures():
-    if not os.path.isdir("Game\\Export"):
-        os.makedirs("Game\\Export")
+    if not os.path.isdir("Game/Export"):
+        os.makedirs("Game/Export")
     #Export all pngs from TXTR
-    with open("Game\\TXTR", "rb") as file_reader:
+    with open("Game/TXTR", "rb") as file_reader:
         file_reader.seek(8)
         texture_count = int.from_bytes(file_reader.read(4), "little")
         for index in range(texture_count):
@@ -202,7 +202,7 @@ def unpack_textures():
             file_reader.seek(texture_info_offset + 8)
             texture_offset = int.from_bytes(file_reader.read(4), "little") - chunk_to_offset["TXTR"]
             #Export texture data
-            with open(f"Game\\export\\{index}.png", "wb") as file_writer:
+            with open(f"Game/export/{index}.png", "wb") as file_writer:
                 file_reader.seek(texture_offset)
                 texture_size = file_reader.read().find((0x49454E44AE426082).to_bytes(8, "big")) + 8
                 file_reader.seek(texture_offset)
@@ -210,7 +210,7 @@ def unpack_textures():
 
 def repack_textures():
     #Reimport all pngs back into TXTR
-    with open("Game\\TXTR", "r+b") as file_writer:
+    with open("Game/TXTR", "r+b") as file_writer:
         first_texture = file_writer.read().find((0x89504E470D0A1A0A).to_bytes(8, "big"))
         file_writer.truncate(first_texture)
         file_writer.seek(8)
@@ -229,7 +229,7 @@ def repack_textures():
             file_writer.write((texture_offset + chunk_to_offset["TXTR"]).to_bytes(4, "little"))
             #Append texture data
             file_writer.seek(texture_offset)
-            with open(f"Game\\export\\{index}.png", "rb") as file_reader:
+            with open(f"Game/export/{index}.png", "rb") as file_reader:
                 file_writer.write(file_reader.read())
             #Fill remaining space
             remainder = file_writer.tell()%0x10
@@ -243,7 +243,7 @@ def repack_textures():
         file_writer.seek(4)
         file_writer.write(new_size.to_bytes(4, "little"))
     #Shift offsets in the only chunk that comes after textures
-    with open("Game\\AUDO", "r+b") as file_writer:
+    with open("Game/AUDO", "r+b") as file_writer:
         file_writer.seek(8)
         sound_count = int.from_bytes(file_writer.read(4), "little")
         for index in range(sound_count):
@@ -253,7 +253,7 @@ def repack_textures():
             file_writer.write((sound_offset + (new_size - old_size)).to_bytes(4, "little"))
 
 def unpack_save_data():
-    with open(f"Data\\{game_name}\\Save\\Save.sav", "r", encoding="utf8") as file_reader:
+    with open(f"Data/{game_name}/Save/Save.sav", "r", encoding="utf8") as file_reader:
         save_data = file_reader.readlines()
     read_save_data(save_data)
 
@@ -264,7 +264,7 @@ def repack_save_data():
     #Add a signature to the new save
     game_save["sFileName"] = save_signature
     #Open save data
-    with open(f"Data\\{game_name}\\Save\\Save.sav", "r", encoding="utf8") as file_reader:
+    with open(f"Data/{game_name}/Save/Save.sav", "r", encoding="utf8") as file_reader:
         save_data = file_reader.readlines()
     write_save_data(save_data)
     #Write the file in the proper location
@@ -312,7 +312,7 @@ def write_save_data(save_data):
 
 def read_game_data():
     #String data
-    with open("Game\\STRG", "rb") as file_reader:
+    with open("Game/STRG", "rb") as file_reader:
         file_reader.seek(8)
         string_list_length = int.from_bytes(file_reader.read(4), "little")
         for string_index in range(string_list_length):
@@ -323,7 +323,7 @@ def read_game_data():
             string = file_reader.read(string_length).decode("utf-8")
             game_strings[string_offset + 4] = string
     #Audio data
-    with open("Game\\AUDO", "rb") as file_reader:
+    with open("Game/AUDO", "rb") as file_reader:
         file_reader.seek(8)
         audio_list_length = int.from_bytes(file_reader.read(4), "little")
         for audio_index in range(audio_list_length):
@@ -333,7 +333,7 @@ def read_game_data():
             wave_length = int.from_bytes(file_reader.read(4), "little")
             game_audio.append(Audio(wave_length))
     #Sound data
-    with open("Game\\SOND", "rb") as file_reader:
+    with open("Game/SOND", "rb") as file_reader:
         file_reader.seek(8)
         sound_list_length = int.from_bytes(file_reader.read(4), "little")
         for sound_index in range(sound_list_length):
@@ -349,7 +349,7 @@ def read_game_data():
             audio_id = int.from_bytes(file_reader.read(4), "little")
             game_sounds[name] = Sound(effects, volume, pitch, audio_id)
     #Page item data
-    with open("Game\\TPAG", "rb") as file_reader:
+    with open("Game/TPAG", "rb") as file_reader:
         file_reader.seek(8)
         page_item_list_length = int.from_bytes(file_reader.read(4), "little")
         for page_item_index in range(page_item_list_length):
@@ -371,7 +371,7 @@ def read_game_data():
             texture_id    = int.from_bytes(file_reader.read(2), "little")
             game_page_items[page_item_offset] = PageItem(source_pos_x, source_pos_y, source_size_x, source_size_y, target_pos_x, target_pos_y, target_size_x, target_size_y, bound_size_x, bound_size_y, texture_id)
     #Sprite data
-    with open("Game\\SPRT", "rb") as file_reader:
+    with open("Game/SPRT", "rb") as file_reader:
         file_reader.seek(8)
         sprite_list_length = int.from_bytes(file_reader.read(4), "little")
         for sprite_index in range(sprite_list_length):
@@ -389,7 +389,7 @@ def read_game_data():
                 page_item_list.append(list(game_page_items).index(page_item_offset))
             game_sprites[name] = Sprite(page_item_list)
     #Tileset data
-    with open("Game\\BGND", "rb") as file_reader:
+    with open("Game/BGND", "rb") as file_reader:
         file_reader.seek(8)
         tileset_list_length = int.from_bytes(file_reader.read(4), "little")
         for tileset_index in range(tileset_list_length):
@@ -401,7 +401,7 @@ def read_game_data():
             page_item_offset = int.from_bytes(file_reader.read(4), "little")
             game_tilesets[name] = TileSet(list(game_page_items).index(page_item_offset))
     #Object data
-    with open("Game\\OBJT", "rb") as file_reader:
+    with open("Game/OBJT", "rb") as file_reader:
         file_reader.seek(8)
         object_list_length = int.from_bytes(file_reader.read(4), "little")
         for object_index in range(object_list_length):
@@ -450,7 +450,7 @@ def read_game_data():
             game_objects[name] = Object(sprite, visible, solid, unknown, persistent, parent, texture_mask_id, uses_physics, is_sensor, collision_shape, events)
             game_objects_backup[name] = Object(sprite, visible, solid, unknown, persistent, parent, texture_mask_id, uses_physics, is_sensor, collision_shape, events_backup)
     #Room data
-    with open("Game\\ROOM", "rb") as file_reader:
+    with open("Game/ROOM", "rb") as file_reader:
         file_reader.seek(8)
         room_list_length = int.from_bytes(file_reader.read(4), "little")
         for room_index in range(room_list_length):
@@ -507,7 +507,7 @@ def read_game_data():
 
 def write_game_data():
     #Page item data
-    with open("Game\\TPAG", "r+b") as file_writer:
+    with open("Game/TPAG", "r+b") as file_writer:
         file_writer.seek(8)
         page_item_list_length = int.from_bytes(file_writer.read(4), "little")
         for page_item_index in range(page_item_list_length):
@@ -526,7 +526,7 @@ def write_game_data():
             file_writer.write(game_page_items[page_item_offset].bound_size_y.to_bytes(2, "little"))
             file_writer.write(game_page_items[page_item_offset].texture_id.to_bytes(2, "little"))
     #Sound data
-    with open("Game\\SOND", "r+b") as file_writer:
+    with open("Game/SOND", "r+b") as file_writer:
         file_writer.seek(8)
         sound_list_length = int.from_bytes(file_writer.read(4), "little")
         for sound_index in range(sound_list_length):
@@ -541,7 +541,7 @@ def write_game_data():
             file_writer.read(0x4)
             file_writer.write(game_sounds[name].audio_id.to_bytes(4, "little"))
     #Sprite data
-    with open("Game\\SPRT", "r+b") as file_writer:
+    with open("Game/SPRT", "r+b") as file_writer:
         file_writer.seek(8)
         sprite_list_length = int.from_bytes(file_writer.read(4), "little")
         for sprite_index in range(sprite_list_length):
@@ -557,7 +557,7 @@ def write_game_data():
                 page_item_offset = list(game_page_items)[game_sprites[name].page_items[page_item_index]]
                 file_writer.write(page_item_offset.to_bytes(4, "little"))
     #Tileset data
-    with open("Game\\BGND", "r+b") as file_writer:
+    with open("Game/BGND", "r+b") as file_writer:
         file_writer.seek(8)
         tileset_list_length = int.from_bytes(file_writer.read(4), "little")
         for tileset_index in range(tileset_list_length):
@@ -569,7 +569,7 @@ def write_game_data():
             page_item_offset = list(game_page_items)[game_tilesets[name].page_item]
             file_writer.write(page_item_offset.to_bytes(4, "little"))
     #Object data
-    with open("Game\\OBJT", "r+b") as file_writer:
+    with open("Game/OBJT", "r+b") as file_writer:
         file_writer.seek(8)
         object_list_length = int.from_bytes(file_writer.read(4), "little")
         for object_index in range(object_list_length):
@@ -607,7 +607,7 @@ def write_game_data():
                     file_writer.read(0x28)
                     file_writer.write((game_objects[name].events[event_types[event_index]][subevent_index].action & 0xFFFFFFFF).to_bytes(4, "little"))
     #Room data
-    with open("Game\\ROOM", "r+b") as file_writer:
+    with open("Game/ROOM", "r+b") as file_writer:
         file_writer.seek(8)
         room_list_length = int.from_bytes(file_writer.read(4), "little")
         for room_index in range(room_list_length):
@@ -719,12 +719,12 @@ def transfer_object_code(recipient, giver):
                     subevent.action = subevent_backup.action
 
 def convert_tilemaps_to_patches():
-    for folder in os.listdir(f"Data\\{game_name}\\TileMap"):
-        if os.path.isdir(f"Data\\{game_name}\\TileMap\\{folder}"):
-            with open(f"Data\\{game_name}\\TileMap\\{folder}.tmp", "wb") as file_writer:
-                for file in os.listdir(f"Data\\{game_name}\\TileMap\\{folder}"):
+    for folder in os.listdir(f"Data/{game_name}/TileMap"):
+        if os.path.isdir(f"Data/{game_name}/TileMap/{folder}"):
+            with open(f"Data/{game_name}/TileMap/{folder}.tmp", "wb") as file_writer:
+                for file in os.listdir(f"Data/{game_name}/TileMap/{folder}"):
                     file_name = os.path.splitext(file)[0]
-                    with open(f"Data\\{game_name}\\TileMap\\{folder}\\{file}") as file_reader:
+                    with open(f"Data/{game_name}/TileMap/{folder}/{file}") as file_reader:
                         new_tile_data = file_reader.read().strip().replace("\n", ",").split(",")
                     new_tile_data = [int(tile_id) for tile_id in new_tile_data]
                     old_tile_data = game_tilemaps[file_name].tile_data
@@ -735,7 +735,7 @@ def convert_tilemaps_to_patches():
                             file_writer.write(new_tile_data[tile_index].to_bytes(4, "little"))
 
 def apply_tilemap_patch(patch):
-    with open(f"Data\\{game_name}\\TileMap\\{patch}.tmp", "rb") as file_reader:
+    with open(f"Data/{game_name}/TileMap/{patch}.tmp", "rb") as file_reader:
         file_reader.seek(0, os.SEEK_END)
         data_size = file_reader.tell()
         current_offset = 0
@@ -766,7 +766,10 @@ def read_save_value(data_type, line_index, value):
         case 'b':
             return bool(int(value)) if value.isdigit() else True
         case 'i':
-            return int(value) if value.isdigit() else value
+            try:
+                return int(value)
+            except TypeError:
+                return value
         case 'f':
             return float(value)
         case 's':

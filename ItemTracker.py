@@ -31,7 +31,7 @@ class MainWindow(QWidget):
         count = 0
         for item in Manager.game.tracker_to_save_watch:
             item_label = QLabel()
-            item_label.setPixmap(QPixmap(f"Data\\{Manager.game_name}\\TrackerIcon\\{item}.png"))
+            item_label.setPixmap(QPixmap(f"Data/{Manager.game_name}/TrackerIcon/{item}.png"))
             opacity_effect = QGraphicsOpacityEffect()
             opacity_effect.setOpacity(1)
             item_label.setGraphicsEffect(opacity_effect)
@@ -41,7 +41,7 @@ class MainWindow(QWidget):
         
         status_hbox = QHBoxLayout()
         self.status_image = QLabel()
-        self.status_image.setPixmap(QPixmap("Data\\tracker_end.png"))
+        self.status_image.setPixmap(QPixmap("Data/tracker_end.png"))
         self.status_label = QLabel()
         self.status_label.setStyleSheet("font-weight: bold; font-size: 8px")
         status_hbox.addWidget(self.status_image)
@@ -64,7 +64,7 @@ class MainWindow(QWidget):
         self.setLayout(main_vbox)
         self.setFixedSize(0, 0)
         self.setWindowTitle(" ")
-        self.setWindowIcon(QIcon("Data\\icon.png"))
+        self.setWindowIcon(QIcon("Data/icon.png"))
         self.show()
         
         #Watcher
@@ -78,7 +78,7 @@ class MainWindow(QWidget):
         self.set_watcher_enabled(is_ready)
         self.warp_button.setEnabled(is_ready)
         status = "str" if is_ready else "end"
-        self.status_image.setPixmap(QPixmap(f"Data\\tracker_{status}.png"))
+        self.status_image.setPixmap(QPixmap(f"Data/tracker_{status}.png"))
         self.status_label.setText(message.upper())
         QApplication.processEvents()
     

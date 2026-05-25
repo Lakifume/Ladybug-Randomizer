@@ -50,19 +50,19 @@ def randomize_background_music(game_path):
         new_dict = dict(zip(old_list, new_list))
         music_replacement.update(new_dict)
     for item in music_replacement:
-        os.rename(f"{game_path}\\data\\{music_replacement[item]}.ogg", f"{game_path}\\data\\{item}.bak")
+        os.rename(f"{game_path}/data/{music_replacement[item]}.ogg", f"{game_path}/data/{item}.bak")
     #Rename or fix music volume when necessary
     for item in music_replacement:
         old_music = item
         new_music = music_replacement[item]
         modifier = Manager.constant["MusicInfo"][new_music]["Modifier"] / Manager.constant["MusicInfo"][old_music]["Modifier"]
         if modifier == 1.0:
-            os.rename(f"{game_path}\\data\\{old_music}.bak", f"{game_path}\\data\\{old_music}.ogg")
+            os.rename(f"{game_path}/data/{old_music}.bak", f"{game_path}/data/{old_music}.ogg")
             continue
-        audio = AudioSegment.from_ogg(f"{game_path}\\data\\{old_music}.bak")
+        audio = AudioSegment.from_ogg(f"{game_path}/data/{old_music}.bak")
         audio += 10 * math.log(modifier**2, 10)
-        audio.export(f"{game_path}\\data\\{old_music}.ogg", format="ogg")
-        os.remove(f"{game_path}\\data\\{old_music}.bak")
+        audio.export(f"{game_path}/data/{old_music}.ogg", format="ogg")
+        os.remove(f"{game_path}/data/{old_music}.bak")
 
 def update_music_names():
     #Luna Nights music tags
@@ -102,7 +102,7 @@ def import_texture(page_item_index):
     texture_id    = page_item.texture_id
     #Load images
     old_image, old_pixels = load_game_texture(texture_id)
-    new_image  = Image.open(f"Data\\{Manager.game_name}\\Texture\\{page_item_index}.png")
+    new_image  = Image.open(f"Data/{Manager.game_name}/Texture/{page_item_index}.png")
     if new_image.size != (source_size_x, source_size_y):
         raise Exception(f"Texture size mismatches page item: {page_item_index}")
     new_pixels = new_image.load()
@@ -154,13 +154,13 @@ def apply_scheme_to_page_item(page_item_index, color_scheme, blacklist):
 
 def load_game_texture(texture_id):
     if not texture_id in texture_to_image:
-        image = Image.open(f"Game\\Export\\{texture_id}.png")
+        image = Image.open(f"Game/Export/{texture_id}.png")
         texture_to_image[texture_id] = (image, image.load())
     return texture_to_image[texture_id]
 
 def save_game_textures():
     for texture_id in texture_to_image:
-        texture_to_image[texture_id][0].save(f"Game\\Export\\{texture_id}.png")
+        texture_to_image[texture_id][0].save(f"Game/Export/{texture_id}.png")
     texture_to_image.clear()
 
 def rgb_to_hex(rgb):

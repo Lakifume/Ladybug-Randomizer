@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         self.view.setLayout(vbox)
         self.setFixedSize(1200, 600)
         self.setWindowTitle(self.seed)
-        self.setWindowIcon(QIcon("Data\\icon.png"))
+        self.setWindowIcon(QIcon("Data/icon.png"))
         self.show()
         self.load_map()
     
@@ -194,10 +194,10 @@ class MainWindow(QMainWindow):
                 theme_to_visuals[theme]["Fill"].append(modify_color(QColor(color), theme_to_mod[theme]))
         for theme in theme_to_visuals:
             theme_to_visuals[theme]["Outline"] = modify_color(QColor("#ffffff"), theme_to_mod[theme])
-        for file in os.listdir(f"Data\\{Manager.game_name}\\MapIcon"):
+        for file in os.listdir(f"Data/{Manager.game_name}/MapIcon"):
             file_name = os.path.splitext(file)[0]
             for theme in theme_to_visuals:
-                theme_to_visuals[theme]["Icon"][file_name] = modify_pixmap_color(QPixmap(f"Data\\{Manager.game_name}\\MapIcon\\{file}"), theme_to_mod[theme])
+                theme_to_visuals[theme]["Icon"][file_name] = modify_pixmap_color(QPixmap(f"Data/{Manager.game_name}/MapIcon/{file}"), theme_to_mod[theme])
             
     def add_room_items(self, room):
         
